@@ -1,0 +1,8 @@
+---
+import GameLayout from '../layouts/game.astro';
+import Game from '../components/Game';
+---
+
+<GameLayout title="25DGAME">
+  <Game client:only="react" />
+</GameLayout>
