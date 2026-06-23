@@ -1,8 +1,109 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { GameProvider } from '@game/state/GameContext';
 import { useGameState } from '@game/state/useGameState';
 import { useSaveState, loadGame, fromSaveData } from '@game/state/useSaveState';
 import { GameCanvas } from '@game/engine/GameCanvas';
+import type { GameAction, GameState } from '@game/types';
+
+const MENU_ITEMS = [
+  { label: '▶ START GAME', action: 'start' as const },
+  { label: '■ ABOUT THIS', action: 'about' as const },
+  { label: '★ CREDITS', action: 'credits' as const },
+];
+
+function MenuScreen({ dispatch }: { dispatch: React.Dispatch<GameAction> }) {
+  const [index, setIndex] = useState(0);
+
+  const execute = useCallback((i: number) => {
+    const item = MENU_ITEMS[i];
+    if (item.action === 'start') {
+      const saved = loadGame();
+      if (saved) {
+        dispatch({ type: 'LOAD_STATE', state: fromSaveData(saved) as GameState });
+      } else {
+        dispatch({ type: 'SET_SCREEN', screen: 'game' });
+      }
+    } else {
+      dispatch({ type: 'SET_SCREEN', screen: item.action });
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      switch (e.code) {
+        case 'ArrowUp':
+        case 'KeyW':
+          e.preventDefault();
+          setIndex((i) => (i - 1 + MENU_ITEMS.length) % MENU_ITEMS.length);
+          break;
+        case 'ArrowDown':
+        case 'KeyS':
+          e.preventDefault();
+          setIndex((i) => (i + 1) % MENU_ITEMS.length);
+          break;
+        case 'Enter':
+        case 'Space':
+          e.preventDefault();
+          execute(index);
+          break;
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [index, execute]);
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        flexDirection: 'column',
+        gap: 16,
+      }}
+    >
+      <h2
+        style={{
+          fontSize: '2rem',
+          fontWeight: 900,
+          color: '#F0E040',
+          fontFamily: "'Impact', sans-serif",
+          marginBottom: 32,
+          letterSpacing: '0.05em',
+        }}
+      >
+        25DGAME
+      </h2>
+
+      {MENU_ITEMS.map((item, i) => {
+        const selected = i === index;
+        return (
+          <button
+            key={item.action}
+            onClick={() => { setIndex(i); execute(i); }}
+            onMouseEnter={() => setIndex(i)}
+            style={{
+              background: 'transparent',
+              border: selected ? '2px solid #F0E040' : '2px solid #555',
+              color: selected ? '#F0E040' : '#888',
+              padding: '12px 48px',
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              fontFamily: "'Impact', sans-serif",
+              cursor: 'pointer',
+              letterSpacing: '0.05em',
+              transition: 'border-color 0.2s, color 0.2s',
+              outline: 'none',
+            }}
+          >
+            {item.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function ScreenRouter() {
   const { state, dispatch } = useGameState();
@@ -51,88 +152,7 @@ function ScreenRouter() {
   }
 
   if (state.screen === 'menu') {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100%',
-          flexDirection: 'column',
-          gap: 16,
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '2rem',
-            fontWeight: 900,
-            color: '#F0E040',
-            fontFamily: "'Impact', sans-serif",
-            marginBottom: 32,
-          }}
-        >
-          25DGAME
-        </h2>
-
-        <button
-          onClick={() => {
-            const saved = loadGame();
-            if (saved) {
-              dispatch({ type: 'LOAD_STATE', state: fromSaveData(saved) as import('@game/types').GameState });
-            } else {
-              dispatch({ type: 'SET_SCREEN', screen: 'game' });
-            }
-          }}
-          style={{
-            background: 'transparent',
-            border: '2px solid #F0E040',
-            color: '#F0E040',
-            padding: '12px 48px',
-            fontSize: '1.2rem',
-            fontWeight: 700,
-            fontFamily: "'Impact', sans-serif",
-            cursor: 'pointer',
-            letterSpacing: '0.05em',
-          }}
-        >
-          ▶ START GAME
-        </button>
-
-        <button
-          onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'about' })}
-          style={{
-            background: 'transparent',
-            border: '2px solid #555',
-            color: '#888',
-            padding: '12px 48px',
-            fontSize: '1.2rem',
-            fontWeight: 700,
-            fontFamily: "'Impact', sans-serif",
-            cursor: 'pointer',
-            letterSpacing: '0.05em',
-          }}
-        >
-          ■ ABOUT THIS
-        </button>
-
-        <button
-          onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'credits' })}
-          style={{
-            background: 'transparent',
-            border: '2px solid #555',
-            color: '#888',
-            padding: '12px 48px',
-            fontSize: '1.2rem',
-            fontWeight: 700,
-            fontFamily: "'Impact', sans-serif",
-            cursor: 'pointer',
-            letterSpacing: '0.05em',
-          }}
-        >
-          ★ CREDITS
-        </button>
-      </div>
-    );
+    return <MenuScreen dispatch={dispatch} />;
   }
 
   if (state.screen === 'game') {
