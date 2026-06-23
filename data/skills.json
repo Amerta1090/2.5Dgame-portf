@@ -1,0 +1,103 @@
+{
+  "categories": [
+    {
+      "name": "Machine Learning & AI",
+      "icon": "brain",
+      "skills": [
+        { "name": "Machine Learning", "proficiency": 5 },
+        { "name": "Deep Learning", "proficiency": 4 },
+        { "name": "Natural Language Processing (NLP)", "proficiency": 4 },
+        { "name": "Large Language Models (LLM)", "proficiency": 3 },
+        { "name": "Retrieval-Augmented Generation (RAG)", "proficiency": 3 },
+        { "name": "AI Agents", "proficiency": 3 },
+        { "name": "Computer Vision", "proficiency": 3 },
+        { "name": "Recommender Systems", "proficiency": 4 }
+      ]
+    },
+    {
+      "name": "Data Science & Analytics",
+      "icon": "chart",
+      "skills": [
+        { "name": "Data Science", "proficiency": 5 },
+        { "name": "Data Engineering", "proficiency": 4 },
+        { "name": "Data Analysis", "proficiency": 5 },
+        { "name": "Statistics", "proficiency": 4 },
+        { "name": "Data Visualization", "proficiency": 4 },
+        { "name": "Time Series Forecasting", "proficiency": 4 },
+        { "name": "Information Retrieval", "proficiency": 3 }
+      ]
+    },
+    {
+      "name": "Web Development",
+      "icon": "code",
+      "skills": [
+        { "name": "Django", "proficiency": 4 },
+        { "name": "React.js", "proficiency": 3 },
+        { "name": "JavaScript", "proficiency": 4 },
+        { "name": "HTML", "proficiency": 5 },
+        { "name": "CSS", "proficiency": 4 },
+        { "name": "Responsive Web Design", "proficiency": 4 },
+        { "name": "FastAPI", "proficiency": 3 },
+        { "name": "Progressive Web Applications (PWAs)", "proficiency": 3 },
+        { "name": "Front-End Development", "proficiency": 4 },
+        { "name": "Back-End Web Development", "proficiency": 4 },
+        { "name": "Full-Stack Development", "proficiency": 4 }
+      ]
+    },
+    {
+      "name": "IoT & Embedded Systems",
+      "icon": "chip",
+      "skills": [
+        { "name": "Internet of Things (IoT)", "proficiency": 4 },
+        { "name": "Embedded Systems", "proficiency": 4 },
+        { "name": "ESP8266", "proficiency": 4 },
+        { "name": "ESP32 Microcontrollers", "proficiency": 4 },
+        { "name": "Arduino", "proficiency": 4 },
+        { "name": "Electronic Circuit Design", "proficiency": 3 },
+        { "name": "Raspberry Pi", "proficiency": 3 }
+      ]
+    },
+    {
+      "name": "DevOps & MLOps",
+      "icon": "gear",
+      "skills": [
+        { "name": "MLOps", "proficiency": 4 },
+        { "name": "Docker", "proficiency": 3 },
+        { "name": "Prometheus", "proficiency": 3 },
+        { "name": "Grafana", "proficiency": 3 },
+        { "name": "MLflow", "proficiency": 3 },
+        { "name": "DevOps", "proficiency": 3 }
+      ]
+    },
+    {
+      "name": "Programming Languages",
+      "icon": "terminal",
+      "skills": [
+        { "name": "Python", "proficiency": 5 },
+        { "name": "JavaScript", "proficiency": 4 },
+        { "name": "C++", "proficiency": 3 },
+        { "name": "Bash", "proficiency": 3 },
+        { "name": "SQL", "proficiency": 4 }
+      ]
+    },
+    {
+      "name": "Cloud & Infrastructure",
+      "icon": "cloud",
+      "skills": [
+        { "name": "Google Cloud Platform (GCP)", "proficiency": 3 },
+        { "name": "Google Apps Script", "proficiency": 3 },
+        { "name": "Google Sheets", "proficiency": 3 },
+        { "name": "Linux", "proficiency": 4 }
+      ]
+    },
+    {
+      "name": "Productivity & Automation",
+      "icon": "zap",
+      "skills": [
+        { "name": "Automation", "proficiency": 4 },
+        { "name": "Prompt Engineering", "proficiency": 4 },
+        { "name": "AI Prompting", "proficiency": 4 }
+      ]
+    }
+  ]
+}

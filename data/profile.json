@@ -1,0 +1,22 @@
+{
+  "name": "Abdul Majid Ridwan Tyastonoatmaja",
+  "headline": "AI/ML Engineer & Systems Builder",
+  "tagline": "Building production ML systems from sensor to deployment.",
+  "location": "Tulungagung, East Java, Indonesia",
+  "timezone": "Asia/Jakarta",
+  "contact": {
+    "email": "abdulmajidr708@gmail.com",
+    "phone": "+6285927450991",
+    "linkedin": "https://linkedin.com/in/abdulmajidr708",
+    "github": "https://github.com/Amerta1090",
+    "website": null
+  },
+  "summary": "Computer science graduate focused on applied machine learning, data science, and intelligent systems. Background in electronics and IoT. Builds AI-powered solutions at the intersection of data, automation, and physical computing. Emphasizes structured analysis, system-level thinking, and practical implementation.",
+  "metrics": {
+    "years_experience": 2,
+    "projects_shipped": 18,
+    "certifications": 62,
+    "languages": ["English", "Indonesian"]
+  },
+  "resume_url": "/resume"
+}
