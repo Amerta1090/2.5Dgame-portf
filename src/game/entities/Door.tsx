@@ -7,13 +7,18 @@ interface DoorProps {
   y: number;
   targetZone: ZoneId;
   isNearby: boolean;
+  onTransition?: (targetZone: ZoneId) => void;
 }
 
-export function Door({ x, y, targetZone, isNearby }: DoorProps) {
+export function Door({ x, y, targetZone, isNearby, onTransition }: DoorProps) {
   const { dispatch } = useGameState();
 
   function handleEnter() {
-    dispatch({ type: 'SET_ZONE', zone: targetZone });
+    if (onTransition) {
+      onTransition(targetZone);
+    } else {
+      dispatch({ type: 'SET_ZONE', zone: targetZone });
+    }
   }
 
   return (
