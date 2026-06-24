@@ -15,6 +15,7 @@ import { Zone2AcademyRoom } from '@game/zones/Zone2_AcademyRoom';
 import { Zone3Workshop } from '@game/zones/Zone3_Workshop';
 import { Zone4ProjectDistrict } from '@game/zones/Zone4_ProjectDistrict';
 import { Zone5CareerCorridor } from '@game/zones/Zone5_CareerCorridor';
+import { Zone6FinalRoom } from '@game/zones/Zone6_FinalRoom';
 
 export function GameCanvas() {
   const { state, dispatch } = useGameState();
@@ -98,6 +99,7 @@ export function GameCanvas() {
         {state.currentZone === 'zone5' && (
           <Zone5CareerCorridor onTransition={handleTransition} />
         )}
+        {state.currentZone === 'zone6' && <Zone6FinalRoom />}
 
         <Player walking={moveX !== 0} />
       </motion.div>
