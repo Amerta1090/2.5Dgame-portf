@@ -13,6 +13,7 @@ import { ScreenWipe } from '@game/effects/ScreenWipe';
 import { Zone1SpawnArea } from '@game/zones/Zone1_SpawnArea';
 import { Zone2AcademyRoom } from '@game/zones/Zone2_AcademyRoom';
 import { Zone3Workshop } from '@game/zones/Zone3_Workshop';
+import { Zone4ProjectDistrict } from '@game/zones/Zone4_ProjectDistrict';
 
 export function GameCanvas() {
   const { state, dispatch } = useGameState();
@@ -89,6 +90,9 @@ export function GameCanvas() {
         )}
         {state.currentZone === 'zone3' && (
           <Zone3Workshop onTransition={handleTransition} />
+        )}
+        {state.currentZone === 'zone4' && (
+          <Zone4ProjectDistrict onTransition={handleTransition} />
         )}
 
         <Player walking={moveX !== 0} />
