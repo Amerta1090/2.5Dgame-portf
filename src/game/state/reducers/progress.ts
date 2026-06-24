@@ -18,11 +18,10 @@ export function progressReducer(state: GameState, action: GameAction): GameState
 
     case 'MOVE_PLAYER': {
       const zoneWidth = { zone1: 2000, zone2: 3000, zone3: 5000, zone4: 8000, zone5: 4000, zone6: 1500 }[state.currentZone];
-      const maxX = Math.max(0, zoneWidth - 1920);
       return {
         ...state,
         playerPosition: {
-          x: Math.max(0, Math.min(action.x, maxX)),
+          x: Math.max(0, Math.min(action.x, zoneWidth)),
           y: action.y,
         },
       };

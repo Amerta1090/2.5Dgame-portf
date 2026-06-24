@@ -1,4 +1,3 @@
-import { VIEWPORT_WIDTH } from '@game/constants';
 import type { ZoneId } from '@game/types';
 
 const ZONE_WIDTH: Record<ZoneId, number> = {
@@ -12,8 +11,7 @@ const ZONE_WIDTH: Record<ZoneId, number> = {
 
 export function clampToWorldBounds(x: number, currentZone: ZoneId): number {
   const zoneWidth = ZONE_WIDTH[currentZone];
-  const maxX = Math.max(0, zoneWidth - VIEWPORT_WIDTH);
-  return Math.max(0, Math.min(x, maxX));
+  return Math.max(0, Math.min(x, zoneWidth));
 }
 
 export type Collider = {
