@@ -11,6 +11,7 @@ import { Player } from '@game/entities/Player';
 import { HUD } from '@game/ui/HUD';
 import { ScreenWipe } from '@game/effects/ScreenWipe';
 import { Zone1SpawnArea } from '@game/zones/Zone1_SpawnArea';
+import { Zone2AcademyRoom } from '@game/zones/Zone2_AcademyRoom';
 
 export function GameCanvas() {
   const { state, dispatch } = useGameState();
@@ -81,6 +82,9 @@ export function GameCanvas() {
       >
         {state.currentZone === 'zone1' && (
           <Zone1SpawnArea onTransition={handleTransition} />
+        )}
+        {state.currentZone === 'zone2' && (
+          <Zone2AcademyRoom onTransition={handleTransition} />
         )}
 
         <Player walking={moveX !== 0} />

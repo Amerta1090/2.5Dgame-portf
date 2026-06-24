@@ -725,11 +725,26 @@ src/
 │   ├── types.ts                       # All TypeScript interfaces
 │   ├── constants.ts                   # Magic numbers, config, tuning
 │   │
-│   ├── data/
-│   │   ├── index.ts                   # Unified loader: aggregates all JSON
-│   │   ├── transform.ts               # Normalization utilities
-│   │   ├── __generated__/
-│   │   │   └── types.ts               # (Auto) Generated from JSON schema
+│   ├── art/
+│   │   ├── backgrounds/               # Zone CSS background components
+│   │   │   ├── Zone1Background.tsx
+│   │   │   ├── Zone2Background.tsx
+│   │   │   ├── Zone3HubBackground.tsx
+│   │   │   ├── Zone3AILab.tsx
+│   │   │   ├── Zone3WebStudio.tsx
+│   │   │   ├── Zone3IoTWorkshop.tsx
+│   │   │   ├── Zone4Background.tsx
+│   │   │   ├── Zone5Background.tsx
+│   │   │   └── Zone6Background.tsx
+│   │   ├── PlayerSprite.tsx           # SVG character
+│   │   └── props/                     # Inline SVG prop components
+│   │       ├── Terminal.tsx
+│   │       ├── FilingCabinet.tsx
+│   │       ├── CertificateFrame.tsx
+│   │       ├── LabWorkbench.tsx
+│   │       ├── Building.tsx
+│   │       ├── StationKiosk.tsx
+│   │       └── Pedestal.tsx
 │   │
 │   ├── state/
 │   │   ├── GameContext.tsx             # React Context for game state
@@ -832,7 +847,8 @@ The game renders using **HTML/CSS + React, not Canvas**.
 
 **2.5D Effect:**
 - Parallax layers: background (far) scrolls at 0.2x, midground at 0.5x, foreground at 1x
-- Player sprite: CSS-styled div with pseudo-element character
+- **All visuals are pure CSS/SVG** — no external images. Backgrounds use CSS gradients + geometric divs. Characters and props are inline SVG.
+- Player sprite: SVG character (geometric shapes: circle head, rect body, line limbs)
 - Depth: box-shadows and scale for pseudo-3D effect
 - Persona-style menus: absolutely positioned overlays with bold typography
 
@@ -1088,138 +1104,1107 @@ highlights → Description text
 
 ## 8. SPRINT PLANNING
 
-### Phase 0 — Planning & Scaffolding (Week 1)
+> **Timeline note**: Each sprint is 1–3 sessions of focused work. Sprints are ordered by dependency, but don't strictly map to weeks — take as long as each needs.
+>
+> **Art approach (all sprints)**: Pure CSS + inline SVG. No external images. Style: geometric minimalism with bold Persona-style yellow-on-black. Zone-specific accent colors.
 
-**Goal:** Project setup, data normalization, architecture validation
+---
 
-**Tasks:**
-1. Initialize Astro + React + TypeScript project
-2. Install Tailwind CSS, Framer Motion
-3. Configure `tsconfig.json` with path aliases (`@data/*`, `@game/*`)
-4. Create folder structure per architecture blueprint
-5. Write all TypeScript interfaces in `types.ts`
-6. Create `src/game/data/transform.ts` — normalize all JSON data
-7. Create `src/game/data/index.ts` — unified data loader
-8. Write data validation unit tests (vitest or bun:test)
-9. Set up ESLint + Prettier config
-10. Set up GitHub repo + CI (basic lint + typecheck)
+### Phase 0 — Foundation Setup (4 sprints)
 
-**Dependencies:** None  
-**Risks:** JSON schema inconsistencies (see data audit) — mitigate by fixing source files first  
-**Deliverables:** Running project skeleton, typed data layer, passing tests  
-**Timeline:** 5–7 days
+---
 
-### Phase 1 — Foundation (Week 2)
+#### Sprint 0.1 — Project Scaffolding
+**Component:** Project init + data layer
 
-**Goal:** Core engine, state management, player movement
+**Files to create:**
+- `astro.config.mjs` — Astro + React + Tailwind config
+- `tsconfig.json` — path aliases (`@data/*`, `@game/*`)
+- `tailwind.config.js` — content paths
+- `eslint.config.js` — Astro + TypeScript rules
+- `.prettierrc` — format config
+- `.github/workflows/ci.yml` — lint + typecheck + test on push
+- `src/game/types.ts` — all TypeScript interfaces (GameState, GameAction, ZoneId, etc.)
+- `src/game/data/transform.ts` — JSON normalization utilities
+- `src/game/data/index.ts` — unified data loader
+- `src/game/constants.ts` — magic numbers (zone widths, speeds, distances)
 
-**Tasks:**
-1. Implement `GameContext` + reducers (progress, inventory, achievements, puzzles)
-2. Implement `useSaveState` — localStorage read/write with versioning
-3. Build `GameCanvas` component — viewport container
-4. Build `useGameLoop` — requestAnimationFrame tick (for timer only)
-5. Build `useCamera` — player-following camera with spring physics
-6. Build `usePlayerMovement` — arrow/WASD input → position state
-7. Build `useCollision` — AABB collision against world bounds
-8. Build `useInteraction` — proximity detection + E key dispatch
-9. Create `Player` entity component
-10. Create `Interactable` base entity component
-11. Create `Door` entity component with zone transition trigger
-12. Implement `ScreenWipe` transition animation
-13. Create `HUD` component with zone name, progress, counters
+**Visual spec:** N/A — pure infra
 
-**Dependencies:** Phase 0 complete  
-**Risks:** Movement physics feeling unpolished — tune spring values early  
-**Deliverables:** Playable prototype: player moves in a test world, collides with boundaries, triggers interactions  
-**Timeline:** 5–7 days
+**Accept criteria:** `npx astro check` passes, `npx vitest run` passes, CI green
 
-### Phase 2 — World Building (Week 3–4)
+---
 
-**Goal:** All six zones built with content from JSON
+#### Sprint 0.2 — Folder Structure + Layout
+**Component:** Directory scaffold + page layout
 
-**Tasks:**
-1. Build `ZoneRenderer` — zone routing + mount/unmount
-2. **Zone 1:** Spawn Area scene, terminal interactable, filing cabinet lore
-3. **Zone 2:** Academy Room scene, certificate frames (auto-generated from data), honors pedestals, Timeline Sort puzzle
-4. **Zone 3:** Workshop hub + 3 sub-room scenes, skill displays per category, AI Pipeline + Component Connect + Debug Challenge puzzles
-5. **Zone 4:** Project District scene, auto-generated building entities from `projects.json`, building interior view, 6 featured project premium interiors
-6. **Zone 5:** Career Corridor scene, auto-generated stations from `experience.json`, volunteering segment, Decision Sim puzzle
-7. **Zone 6:** Final Room scene, monologue pedestal, journey wall stats
-8. Zone unlock logic in progress reducer
-9. Zone title overlays on entry
+**Files to create:**
+- `src/game/engine/` — GameCanvas, hooks
+- `src/game/state/` — contexts, reducers
+- `src/game/entities/` — Player, Door, interactables
+- `src/game/ui/` — HUD, overlays
+- `src/game/effects/` — transitions, overlays
+- `src/game/art/` — backgrounds, PlayerSprite, props
+- `src/game/screens/` — TitleScreen, MainMenu, etc.
+- `src/game/zones/` — zone files
+- `src/layouts/game.astro` — minimal HTML shell
+- `src/components/Game.tsx` — root game component
+- `src/game/styles/game.css` — global game styles
 
-**Dependencies:** Phase 1, all normalized data  
-**Risks:** Zone 4 is largest — parallelize by scaffolding one building and testing, then generate remaining  
-**Deliverables:** Full game loop playable from title to Final Room  
-**Timeline:** 10–14 days
+**Import all `game.css`** in `game.astro`
 
-### Phase 3 — UI & Polish (Week 5)
+**Accept criteria:** Browser shows a blank page with `#game-root` div
 
-**Goal:** Title screen, menus, HUD, effects, transitions
+---
 
-**Tasks:**
-1. `TitleScreen` — PS2 boot animation sequence (CSS animation sequence: logo fade, scanline drift, "Press any key" blink)
-2. `MainMenu` — keyboard-navigated menu with arrow highlight effect
-3. `AboutModal` — "What is this?" explanation screen
-4. `CreditsScreen` — data sources, tech stack, references
-5. `PauseMenu` — Resume, Save, Load, Skip Game, Reset
-6. `DialogueBox` — typewriter effect with persona-style styling
-7. `AchievementToast` — slide-in notification
-8. `InteractionPrompt` — "Press E" with pulse animation
-9. `Scanlines` — subtle CRT overlay component
-10. `Letterbox` — cinematic bars for important moments
-11. `StandardPortfolio` — fallback "Skip Game" page (simple bio + links)
-12. Transitions: screen wipe, fade, zone title overlay polish
+#### Sprint 0.3 — State Management
+**Component:** GameContext + reducers
 
-**Dependencies:** Phase 2 zones  
-**Risks:** Title screen animation complexity — keep CSS-based, avoid JS animationlibs  
-**Deliverables:** Polished, cinematic-quality game experience  
-**Timeline:** 5–7 days
+**Files to create:**
+- `src/game/state/GameContext.tsx` — React Context + Provider
+- `src/game/state/useGameState.ts` — hook wrapper
+- `src/game/state/useSaveState.ts` — localStorage save/load with versioning
+- `src/game/state/reducers/index.ts` — root reducer combiner
+- `src/game/state/reducers/progress.ts` — zone unlocks, completions
+- `src/game/state/reducers/inventory.ts` — lore fragments, badges
+- `src/game/state/reducers/achievements.ts` — achievement tracking
+- `src/game/state/reducers/puzzles.ts` — puzzle state
 
-### Phase 4 — Content Integration & Tuning (Week 6)
+**Actions handled:**
+- `SET_SCREEN`, `SET_ZONE`, `COMPLETE_ZONE`, `MOVE_PLAYER`, `SET_PLAYER_FACING`
+- `COLLECT_LORE`, `COLLECT_CERT`, `COMPLETE_PUZZLE`, `INCREMENT_ATTEMPT`
+- `UNLOCK_ACHIEVEMENT`, `TICK_TIME`, `LOAD_STATE`, `RESET`
 
-**Goal:** All data integrated, balanced, tested
+**Accept criteria:** State updates correctly, save round-trips, tests pass
 
-**Tasks:**
-1. Replace mock data with real normalized data in all zones
-2. Tune puzzle difficulty (attempt counts, hint timing)
-3. Implement hidden lore fragment placement in all 9 locations
-4. Implement achievement trigger logic across all events
-5. Implement secret "Developer's Commentary" mode (lore master reward)
-6. Add "speedrun timer" (optional, hidden toggle)
-7. Easter eggs: 2–3 pop culture references (Persona 4 references, tech jokes)
-8. Performance profiling: Lighthouse, bundle analysis
-9. Accessibility audit: keyboard nav, screen reader, reduced motion
-10. Cross-browser testing (Chrome, Firefox, Safari)
-11. Mobile responsiveness (graceful degradation)
+---
 
-**Dependencies:** Phase 3 UI complete  
-**Risks:** Puzzle balance — test with 3 external users  
-**Deliverables:** Feature-complete game, QA-ready  
-**Timeline:** 5–7 days
+#### Sprint 0.4 — CI + Quality Gates
+**Component:** CI pipeline
 
-### Phase 5 — Launch (Week 7)
+**Files to create:**
+- `.github/workflows/ci.yml`
+- `vitest.config.ts`
 
-**Goal:** Deploy, announce, iterate
+**Visual spec:** N/A
 
-**Tasks:**
-1. Astro production build optimization
-2. Deploy to Cloudflare Pages (recommended) or Vercel
-3. Custom domain setup (if applicable)
-4. `robots.txt` + `sitemap.xml` config
-5. Open Graph meta tags for social preview
-6. Add `resume_url` → `/resume` route
-7. Write README
-8. Announce on LinkedIn + GitHub
-9. Monitor analytics (post-launch)
-10. Collect feedback, plan Phase 6 improvements
+**Accept criteria:** `npm test`, `npm run lint`, `npx tsc --noEmit` all pass in CI
 
-**Dependencies:** Phase 4  
-**Risks:** Deploy platform limits — Cloudflare Pages free tier sufficient for SSG  
-**Deliverables:** Live, production-ready portfolio game  
-**Timeline:** 3–5 days
+---
 
-### Phase 0–5 Total Timeline: 6–7 weeks
+### Phase 1 — Core Engine (6 sprints)
+
+---
+
+#### Sprint 1.1 — Game Loop + Camera
+**Component:** Engine foundation
+
+**Files to create:**
+- `src/game/engine/useGameLoop.ts` — requestAnimationFrame, delta time, cleanup on unmount
+- `src/game/engine/useCamera.ts` — Framer Motion `useSpring` camera, clamps to world bounds, parallax offset
+
+**Visual spec:** N/A
+
+**Accept criteria:** Ticking works, camera follows a mock x-coordinate with smooth spring
+
+---
+
+#### Sprint 1.2 — Player Movement
+**Component:** Input handling
+
+**Files to create:**
+- `src/game/engine/usePlayerMovement.ts` — key listeners for ArrowLeft/Right, A/D, Shift sprint; returns `{ moveX, isSprinting }`
+
+**Design requirements:**
+- Movement feels responsive (no acceleration/deceleration, instant direction switch)
+- Sprint = 1.75x speed
+- Disable input during transitions via `active` param
+
+**Accept criteria:** Keys move the player, sprint works, input disabled during transition
+
+---
+
+#### Sprint 1.3 — Collision System
+**Component:** World bounds
+
+**Files to create:**
+- `src/game/engine/useCollision.ts` — `clampToWorldBounds(x, zoneId)` that reads zone width from constants
+
+**Accept criteria:** Player cannot exit zone left/right edges
+
+---
+
+#### Sprint 1.4 — Interaction System
+**Component:** Proximity detection
+
+**Files to create:**
+- `src/game/engine/useInteraction.ts` — given player position + list of interactables, returns nearest interactable within `INTERACTION_DISTANCE`
+
+**Accept criteria:** Walking near a Door shows "Press E" prompt
+
+---
+
+#### Sprint 1.5 — GameCanvas + Zone Routing
+**Component:** Main viewport orchestrator
+
+**Files to create:**
+- `src/game/engine/GameCanvas.tsx` — ties everything together:
+  - `motion.div` world container with `translateX` from camera
+  - Ground plane (80px, `#1A1A1A` with top border)
+  - Door rendering with transition trigger
+  - "Press E to interact" overlay
+  - `ScreenWipe` transition on zone change
+- `src/components/Game.tsx` — screen router: Title → Menu → Game
+  - Import `game.css` in layout
+
+**Accept criteria:** Player moves in a test world, collides on edges, triggers E prompt near door, screen wipe on zone change
+
+---
+
+#### Sprint 1.6 — ScreenWipe Transition
+**Component:** Zone transition animation
+
+**Files to create:**
+- `src/game/effects/ScreenWipe.tsx` — horizontal iris wipe (center line expands to full screen), zone name overlay, callback on complete
+
+**Visual spec:**
+- Duration: 800ms wipe-in, 600ms hold zone name, 400ms fade-out
+- Background: `#0A0A0A`
+- Text: `#F0E040`, Impact font, "ZONE NAME" centered
+- Zone name stays for 1.5s then wipes out
+
+**Accept criteria:** Clean transition between zones, no flashes or glitches
+
+---
+
+### Phase 2 — Art System (4 sprints)
+
+---
+
+#### Sprint 2.1 — Player Character Design
+**Component:** `PlayerSprite`
+
+**Files to create:**
+- `src/game/art/PlayerSprite.tsx` — SVG character, Framer Motion walk bob
+
+**Visual spec:**
+- ViewBox: `0 0 40 80`
+- **Head**: `circle cx=20 cy=14 r=11`, fill `#d4a574` (light skin)
+- **Hair**: `path`, dark silhouette (`#1a1a1a`), spiky/neat style
+- **Body**: `rect x=11 y=25 w=18 h=34 rx=3`, fill `#2a2a2a` (dark hoodie)
+- **Backpack**: `rect x=8 y=28 w=8 h=26 rx=2`, fill `#1a1a1a`
+- **Arms**: 2 rects, fill `#2a2a2a`, position at shoulders
+- **Legs**: 2 rects `w=7 h=20 rx=2`, fill `#1a1a1a` (dark pants)
+- **Shoes**: 2 rects `w=10 h=4 rx=1.5`, fill `#333`
+- **Eyes**: 2 small white circles + smaller dark pupils
+- **Facing**: SVG group wrapped in parent div with `scaleX(-1)` for left
+
+| State | Visual |
+|-------|--------|
+| Idle | Standing, no bob |
+| Walking | Framer Motion `y: [0, -2, 0, -2, 0]`, repeat infinite, 0.3s duration |
+| Facing right | Normal |
+| Facing left | `scaleX(-1)` on wrapper div |
+
+**Accept criteria:** Renders 40×80px, responds to `facing` and `walking` props
+
+---
+
+#### Sprint 2.2 — Terminal Prop
+**Component:** `Terminal`
+
+**Files to create:**
+- `src/game/art/props/Terminal.tsx` — CSS monitor with green screen
+
+**Visual spec:**
+- **Outer frame**: `80×45px`, gradient `#2a2a3a` → `#1a1a2a`, `border: 2px solid #3a3a4a`, `border-radius: 3px`
+- **Screen inner**: fills frame minus padding, `#0a0a12`
+- **Scan lines**: `repeating-linear-gradient(0deg, transparent 1px, rgba(0,255,100,0.03) 2px)` overlay
+- **Cursor**: `width=6 height=1`, `background #00ff64`, `animation: pulse 1s step-end infinite`
+- **Base**: `width=40% of frame`, `margin: 0 auto`, `#2a2a3a`
+- **Keyboard**: `width=110% of frame`, `height=8px`, `#1a1a2a` with `border: 1px solid #2a2a3a`
+
+| Prop | Size | Position |
+|------|------|----------|
+| Terminal | `80×60px` total | Zone 1, `x=100 y=380` |
+
+**Props interface:**
+```tsx
+interface TerminalProps {
+  x: number;
+  y: number;
+  scale?: number; // default 1
+}
+```
+
+**Accept criteria:** Renders with green scan-line screen, blinking cursor, keyboard
+
+---
+
+#### Sprint 2.3 — Filing Cabinet Prop
+**Component:** `FilingCabinet`
+
+**Files to create:**
+- `src/game/art/props/FilingCabinet.tsx` — CSS cabinet with drawers
+
+**Visual spec:**
+- **Body**: `60×90px`, gradient `#2a2a3a` → `#1a1a2a`, `border: 1px solid #3a3a4a`
+- **Drawers**: divided evenly (default 4), each with `border-bottom` separator
+- **Handles**: centered per drawer, `width=18px height=4px`, `#4a4a5a`, `border-radius: 2px`
+- **Legs**: 2 small rects at bottom corners
+
+| Prop | Size | Position |
+|------|------|----------|
+| Cabinet | `60×100px` total | Zone 1, `x=800 y=360` |
+| Cabinet (3 drawers) | `60×100px` | Zone 1, `x=870 y=360` |
+
+**Props interface:**
+```tsx
+interface FilingCabinetProps {
+  x: number;
+  y: number;
+  scale?: number;
+  drawers?: number; // default 4
+}
+```
+
+**Accept criteria:** Renders with visible drawer dividers and handles
+
+---
+
+#### Sprint 2.4 — Zone 1 Background
+**Component:** `Zone1Background`
+
+**Files to create:**
+- `src/game/art/backgrounds/Zone1Background.tsx` — CSS server room
+
+**Visual spec:**
+
+| Layer | Element | CSS |
+|-------|---------|-----|
+| Far (sky/wall) | Dark gradient | `linear-gradient(180deg, #0a0a12 0%, #0d0d1a 30%, #0f0f22 60%, #111128 100%)` |
+| Far (racks) | 5 server rack silhouettes | `width=80 height=350`, opacity 0.6, cyan border `rgba(0,255,255,0.08)`, spaced 350px apart starting at x=200 |
+| Mid (racks) | 4 closer racks | `width=100 height=420`, opacity 1, cyan border `rgba(0,255,255,0.15)`, spaced 400px starting x=100 |
+| LEDs | Green dots per rack | 3 per rack, `width=4 height=4`, `border-radius: 50%`, `#00ff88` with `box-shadow`, staggered `animation-delay` |
+| Ceiling | Conduit lines | Horizontal line at y=40, vertical drops every 250px |
+| Floor | Ground plane | `height=80px`, gradient `#151528` → `#0d0d1a`, top border `rgba(0,255,255,0.2)`, grid lines every 60px |
+
+**Accept criteria:** Renders inside `GameCanvas`, scrolls with parallax (if parent applies offset)
+
+---
+
+### Phase 3 — Zone Content: Zone 1 Spawn Area (2 sprints)
+
+---
+
+#### Sprint 3.1 — Zone 1: Spawn Area Layout
+**Component:** `Zone1_SpawnArea`
+
+**Files to create:**
+- `src/game/zones/Zone1_SpawnArea.tsx` — assembles background + props + player start position
+
+**Layout:**
+| Element | Position |
+|---------|----------|
+| `Zone1Background` | `inset: 0` |
+| `Terminal` | `x=100 y=360` |
+| `FilingCabinet` | `x=800 y=340` |
+| `FilingCabinet 3-drawer` | `x=870 y=340` |
+| Door to Zone 2 | `x=1900 y=300` (near right edge) |
+| Player start | `x=150 y=400` (in front of terminal) |
+
+**World bounds:** 2000px wide (from `ZONE_WIDTHS`)
+
+**Accept criteria:** Scene renders all elements, player can walk to door
+
+---
+
+#### Sprint 3.2 — Zone 1: Interactables + Lore
+**Component:** Zone interactables
+
+**Files to create:**
+- `src/game/entities/Interactable.tsx` — base glow effect + onClick dispatch
+- Zone 1 terminal interaction: shows profile data (name, headline, summary)
+- Zone 1 filing cabinet: hidden lore fragment LF-1
+
+**Interaction flows:**
+- **Terminal**: Player walks near → press E → dialogue overlay with profile.name, profile.headline, profile.summary, metrics → press E to close → zone progress +10%
+- **Filing cabinet**: Player walks near → press E → "You find a hidden note: 'The subject began their journey in a small town...'" → `COLLECT_LORE('lf-1')` → progress +5%
+
+**Visual spec (Interactable glow):** `box-shadow: 0 0 12px rgba(240, 224, 64, 0.3)` pulsing via Framer Motion
+
+**Accept criteria:** Both interactables work, lore fragments collect, zone progress updates
+
+---
+
+### Phase 4 — Zone Content: Zone 2 Academy Room (3 sprints)
+
+---
+
+#### Sprint 4.1 — Zone 2 Background
+**Component:** `Zone2Background`
+
+**Files to create:**
+- `src/game/art/backgrounds/Zone2Background.tsx` — CSS library/study
+
+**Visual spec:**
+
+| Layer | Element | CSS |
+|-------|---------|-----|
+| Far (sky/wall) | Warm dark gradient | `linear-gradient(180deg, #1a1208 0%, #221a0d 50%, #2a1f0a 100%)` |
+| Far (bookshelves) | Tall rects with shelf | `width=120 height=500`, spaced 250px, fill `#1a1410` with `rgba(212, 160, 23, 0.05)` border |
+| Mid (shelves) | Closer bookshelves | `width=140 height=520`, spaced 300px, fill `#151008` with `rgba(212, 160, 23, 0.1)` border |
+| Books | Small rects on shelves | Random colors: `#8B4513`, `#556B2F`, `#8B0000`, `#191970`, `#4A0000` |
+| Glowing books | 1 per shelf | Golden glow `box-shadow: 0 0 6px rgba(212, 160, 23, 0.4)` |
+| Floor | Ground plane | `height=80px`, gradient `#2a1f0a` → `#1a1208`, top border `rgba(212, 160, 23, 0.2)` |
+
+**Color palette zone accent:** Warm amber/gold (`#d4a017`, `#8B6914`, `#F0E040`)
+
+---
+
+#### Sprint 4.2 — Certificate Frames + Honors Pedestals
+**Component:** Props for Zone 2
+
+**Files to create:**
+- `src/game/art/props/CertificateFrame.tsx` — framed certificate SVG
+- `src/game/art/props/HonorsPedestal.tsx` — pedestal with trophy
+
+**CertificateFrame visual spec:**
+- **Frame**: `80×100px`, outer `#d4a017` (2px), inner `#f5f5f5` (1px)
+- **Paper**: white fill with thin lines for text
+- **Glow**: `box-shadow: 0 0 8px rgba(212, 160, 23, 0.3)`
+
+**HonorsPedestal visual spec:**
+- **Base**: trapezoid via CSS `clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)`, `#1a1a1a`
+- **Top**: small rect `#d4a017`
+- **Trophy icon**: small SVG cup shape or golden circle
+
+**Generated instances:** Certificate frames auto-created from `licenses_certifications.json` data entries (49 certs → 6–8 frames displayed, randomly selected each load)
+
+---
+
+#### Sprint 4.3 — Timeline Sort Puzzle
+**Component:** Timeline sort mini-game
+
+**Files to create:**
+- `src/game/puzzles/TimelineSort.tsx` — drag-to-order puzzle
+- `src/game/props/DraggableCard.tsx` — draggable card with Framer Motion
+
+**Data mapping:** 4 IoT certifications sorted by chronological date
+| Card | Source |
+|------|--------|
+| "IoT Fundamentals" | cert with earliest date |
+| "IoT Hardware" | next date |
+| "IoT Networking & Security" | next date |
+| "ESP32 Programming" | latest date |
+
+**Visual spec:**
+- **Cards**: `120×40px`, `#1a1a2a`, `border: 1px solid #d4a017`, yellow text
+- **Slots**: 4 horizontal positions, dashed border `#555`
+- **Correct slot**: green border `#40E060`
+- **Wrong slot**: red flash `#E04040`
+- **Dragging**: card scales up 1.05x, z-index 100, subtle shadow
+
+**Interaction spec:**
+1. 4 cards appear in random order at top
+2. Player drags each card to one of 4 timeline slots
+3. Submit button appears when all slots filled
+4. On submit: check order → if correct, green glow + unlock zone 3 + achievement
+5. If wrong: cards shake, hint appears ("Try ordering by date")
+6. On 2nd failure: "Skip Puzzle" button appears
+
+**Accept criteria:** Drag works, correct order passes, wrong order shows hint, skip available after 2 fails
+
+---
+
+### Phase 5 — Zone Content: Zone 3 Workshop (4 sprints)
+
+---
+
+#### Sprint 5.1 — Workshop Hub Background
+**Component:** `Zone3HubBackground`
+
+**Files to create:**
+- `src/game/art/backgrounds/Zone3HubBackground.tsx` — CSS clean lab hub
+
+**Visual spec:**
+- **Gradient**: `linear-gradient(180deg, #0f1115 0%, #151820 50%, #1a1e2a 100%)`
+- **Walls**: geometric panels (large rects with border `rgba(255,255,255,0.03)`)
+- **3 doorways**: arch shapes (rounded rects) at positions `x=200`, `x=600`, `x=1000`
+- Each doorway labeled: "AI LAB" / "WEB STUDIO" / "IOT WORKSHOP" with accent color
+- **Floor**: grid pattern, cyan tint `rgba(100, 200, 255, 0.05)`
+
+**Zone accent:** Cool blue/white (`#4080E0`, `#88BBFF`, `#FFFFFF`)
+
+---
+
+#### Sprint 5.2 — Sub-room Backgrounds (3 components)
+**Components:**
+- `src/game/art/backgrounds/Zone3AILab.tsx`
+- `src/game/art/backgrounds/Zone3WebStudio.tsx`
+- `src/game/art/backgrounds/Zone3IoTWorkshop.tsx`
+
+**AI Lab visual spec:**
+- **Gradient**: `#0a0f1a` → `#0d1530` → `#101a3a`
+- **Monitors**: rects with blue glow `rgba(64, 128, 224, 0.3)`
+- **Neural net**: SVG path lines + circles for nodes
+- **Accent**: blue (`#4080E0`)
+
+**Web Studio visual spec:**
+- **Gradient**: `#1a0f08` → `#22150a` → `#2a1a0d`
+- **Monitor arrangement**: 2-3 rects, warm orange glow
+- **Code lines**: horizontal thin lines on screens
+- **Accent**: orange (`#E07040`)
+
+**IoT Workshop visual spec:**
+- **Gradient**: `#081a12` → `#0a2218` → `#0d2a1f`
+- **Workbench**: long rect `#1a1a2a` with top surface `#2a3a2a`
+- **Oscilloscope**: circle screen with green trace line
+- **Components**: small colored rects on bench
+- **Accent**: green/cyan (`#40E060`, `#00ff88`)
+
+---
+
+#### Sprint 5.3 — Skill Display + Lab Workbench Prop
+**Components:**
+- `src/game/zones/subrooms/AI_Lab.tsx` — renders skill nodes from `skills.json` category "ML & AI"
+- `src/game/zones/subrooms/Web_Studio.tsx` — renders skills from "Web Development" category
+- `src/game/zones/subrooms/IoT_Workshop.tsx` — renders skills from "IoT & Hardware" category
+- `src/game/art/props/LabWorkbench.tsx` — prop with microcontroller + sensor shapes
+
+**Visual spec (skill node):**
+- **Circle**: `40×40px`, `border: 2px solid` zone accent color
+- **Proficiency**: fill level based on 1–5 scale (0% → 100%)
+- **Label**: below circle, skill name, 10px font
+- **Layout**: grid arrangement
+
+**LabWorkbench visual spec:**
+- **Table surface**: `200×20px`, `#2a3a2a`, top border `#3a4a3a`
+- **Components**: small labeled SVGs (microcontroller, sensor, wire lines)
+
+---
+
+#### Sprint 5.4 — Workshop Puzzles (3 components)
+**Components:**
+- `src/game/puzzles/AIPipeline.tsx` — drag-to-order ML pipeline stages
+- `src/game/puzzles/ComponentConnect.tsx` — match component ↔ microcontroller
+- `src/game/puzzles/DebugChallenge.tsx` — find bugs in code block
+
+**AI Pipeline visual spec:**
+- Same card system as TimelineSort (reuse `DraggableCard`)
+- 5 stages: "Data Collection" → "Preprocessing" → "Training" → "Evaluation" → "Deployment"
+
+**Component Connect visual spec:**
+- Left column: sensor names ("DHT11", "Load Cell", "Ultrasonic")
+- Right column: microcontroller names ("ESP8266", "Wemos D1", "Arduino UNO")
+- Player clicks sensor then clicks microcontroller to connect
+- Correct connection: green line between them
+- Wrong: red flash
+
+**Debug Challenge visual spec:**
+- Code block with monospace font, `#0a0a12` background, green text
+- 3 bugs hidden in code (player clicks on lines with bugs)
+- Bug found: line highlights red then green
+- All 3 found: success
+
+**Accept criteria:** All 3 puzzles playable, skippable after 2 fails, unlocking zone 4
+
+---
+
+### Phase 6 — Zone Content: Zone 4 Project District (4 sprints)
+
+---
+
+#### Sprint 6.1 — Zone 4 Background
+**Component:** `Zone4Background`
+
+**Files to create:**
+- `src/game/art/backgrounds/Zone4Background.tsx` — CSS tech campus
+
+**Visual spec:**
+
+| Layer | Element | CSS |
+|-------|---------|-----|
+| Far (sky) | Gradient | `linear-gradient(180deg, #1a1410 0%, #221a14 30%, #2a1f18 60%, #1a1410 100%)` |
+| Far (skyline) | Building silhouettes | Rects of varying heights (200–400px), fill `#151008`, opacity 0.5, spaced every 200px |
+| Mid | Closer buildings | Rects height 300–500px, fill `#1a1410`, window grid dots |
+| Sun/light source | Circle | `#F0E040` with `box-shadow`, large blur, top-left corner |
+| Floor | Ground plane | `height=80px`, gradient + grid |
+
+**Zone accent:** Golden hour sunset (`#F0E040`, `#E08030`, `#1a1410`)
+
+---
+
+#### Sprint 6.2 — Building Prop (Parameterized)
+**Component:** `Building`
+
+**Files to create:**
+- `src/game/art/props/Building.tsx` — parameterized building SVG
+
+**Props interface:**
+```tsx
+interface BuildingProps {
+  x: number;
+  y: number;
+  style: 'glass' | 'brick' | 'industrial' | 'concrete' | 'server';
+  width: number;
+  height: number;
+  featured?: boolean;
+  label: string;
+}
+```
+
+**Visual spec per style:**
+| Style | Body color | Window color | Roof | Accent |
+|-------|-----------|-------------|------|--------|
+| Glass (ML) | `#2a3a5a` | `#00ffff` | Flat | Blue |
+| Brick (Web) | `#5a3a2a` | `#ff8844` | Gabled | Orange |
+| Industrial (IoT) | `#4a4a4a` | `#00ff88` | Sawtooth | Green |
+| Concrete (CLI) | `#3a3a3a` | `#888888` | Flat | Grey |
+| Server (DevOps) | `#2a2a3a` | `#0000ff` | Flat with vents | Blue |
+
+- **Featured buildings**: `filter: drop-shadow(0 0 8px #F0E040)`, 1.2x scale
+- Windows: grid of small dots (CSS `repeating-linear-gradient`)
+
+---
+
+#### Sprint 6.3 — Building Auto-generation
+**Component:** Building generation from data
+
+**Files to create:**
+- `src/game/zones/Zone4_ProjectDistrict.tsx` — reads `projects.json`, renders Building per project
+
+**Layout logic:**
+- 21 projects → building entities spaced across 8000px zone
+- Featured (6) → larger, golden glow, prominent position
+- Category → determines `style` prop
+- Each building clickable → enters interior view
+
+**Feature scaling:**
+- Featured projects: full interior room
+- Standard projects: compact popup with text
+
+---
+
+#### Sprint 6.4 — Project Interior View
+**Component:** Project room interior
+
+**Files to create:**
+- `src/game/zones/subrooms/ProjectRoom.tsx` — interior view when entering a building
+
+**Visual spec:**
+- **Room**: `800×500px` div centered, `#1a1a1a` background
+- **Title**: project.name, impact font, `#F0E040`
+- **Period**: small text, `#888`
+- **Description**: body text, max 400px width, `#f5f5f5`
+- **Links**: "Live Demo" and "GitHub" buttons with accent color
+- **Skills**: tag pills (rounded rects with `#F0E040` border)
+- **Media**: if `media[]` present, show simple gallery (rects with `#333` fill)
+- **Close**: "×" button top-right or press Escape
+
+---
+
+### Phase 7 — Zone Content: Zone 5 Career Corridor (2 sprints)
+
+---
+
+#### Sprint 7.1 — Zone 5 Background
+**Component:** `Zone5Background`
+
+**Files to create:**
+- `src/game/art/backgrounds/Zone5Background.tsx` — CSS long corridor
+
+**Visual spec:**
+- **Gradient**: `linear-gradient(180deg, #0f0f0f 0%, #151515 50%, #1a1a1a 100%)`
+- **Floor**: dark, with timeline line (horizontal `#F0E040` stroke at y=70% of floor)
+- **Timeline dots**: circles every 400px representing experience entries
+- **Windows**: rects on upper wall with `rgba(255,255,255,0.05)` fill, spaced every 300px
+- **Wall panels**: repeating vertical lines with subtle border
+
+**Zone accent:** Professional grey/yellow (`#888`, `#F0E040`, `#555`)
+
+---
+
+#### Sprint 7.2 — Station Kiosk Prop + Career Content
+**Components:**
+- `src/game/art/props/StationKiosk.tsx` — interactive kiosk SVG
+- `src/game/zones/Zone5_CareerCorridor.tsx` — auto-generates stations from `experience.json`
+
+**StationKiosk visual spec:**
+- **Body**: `80×120px` tall rect `#2a2a2a`
+- **Screen**: `60×60px` at top, `#0a0a1a`, blue glow `rgba(64, 128, 224, 0.3)`
+- **Base**: wider rect `#1a1a1a`
+- **Label**: company name above or on kiosk
+
+**Interaction per station:**
+- Company name, role, period displayed
+- Highlights as bullet list
+- Technologies as tag pills
+- "Read More" expands full description
+- Volunteering segment at end of corridor
+
+---
+
+#### Sprint 7.3 — Decision Sim Puzzle
+**Component:** `DecisionSim`
+
+**Files to create:**
+- `src/game/puzzles/DecisionSim.tsx` — branching choice narrative
+
+**Visual spec:**
+- **Background**: full-screen overlay `rgba(0,0,0,0.85)`
+- **Scenario text**: typewriter effect, `#f5f5f5`, centered
+- **Choices**: 3 buttons stacked vertically, `200×50px`, border `#555`
+  - Hover: border `#F0E040`, text `#F0E040`
+  - Clicked: border `#40E060`, text `#40E060`
+- **Outcome text**: appears after choice, typewriter, then "Continue" button
+
+**Data mapping:**
+```
+Scenario: "Deadline conflicts with code quality. What do you do?"
+  Choice A: "Ship on time, refactor later" → Outcome: "Practical. Gets results."
+  Choice B: "Delay for code quality" → Outcome: "Principled. Quality matters."
+  Choice C: "Negotiate scope reduction" → Outcome: "Strategic. The mark of a leader."
+```
+
+**Accept criteria:** 3 choices, each shows unique outcome, unlocks zone 6 gate
+
+---
+
+### Phase 8 — Zone Content: Zone 6 Final Room (2 sprints)
+
+---
+
+#### Sprint 8.1 — Zone 6 Background
+**Component:** `Zone6Background`
+
+**Files to create:**
+- `src/game/art/backgrounds/Zone6Background.tsx` — CSS circular room with starry ceiling
+
+**Visual spec:**
+- **Far layer**: `radial-gradient(circle at center, #1a1510 0%, #0f0a08 100%)`
+- **Starry ceiling**: 20–30 small circles (`width=2 height=2`, `#fff` with `box-shadow`), randomly positioned
+- **Wall rings**: concentric `border-radius: 50%` rings with `rgba(240, 224, 64, 0.05)`
+- **Journey icons**: 6 small geometric icons (representing each zone) evenly spaced on circle
+- **Floor**: circular platform gradient `#1a1a1a` → `#0f0a08`
+
+**Zone accent:** Warm gold/dark (`#F0E040`, `#1a1510`, `#fff`)
+
+---
+
+#### Sprint 8.2 — Pedestal Prop + Final Monologue
+**Components:**
+- `src/game/art/props/Pedestal.tsx` — stone pedestal with open book
+- Final Room interactable: monologue with typewriter
+
+**Pedestal visual spec:**
+- **Base**: trapezoid `polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%)`, `#2a2a2a`
+- **Top platform**: rect `#1a1a1a` with gold border
+- **Book**: 2 angled rects (open book), `#d4a017` pages, golden glow `box-shadow`
+
+**Monologue sequence (auto-triggered on entry):**
+```
+Line 1: "You've explored the data, the projects, the work."
+Line 2: "Now you want to know: why?"
+Line 3: "To build systems that matter."
+Line 4: "To bridge the gap between intelligence and action."
+Line 5: "To prove that a kid from Tulungagung can shape the future of AI."
+Line 6: "This is not the end. This is where I begin."
+```
+Each line types out letter-by-letter (50ms per char). Player presses E to advance. After last line → credits roll.
+
+**Journey wall stats:** SVG showing counts from game state (certifications collected, projects built, skills mastered, years grinding)
+
+**Accept criteria:** All 6 text lines play, journey stats display, credits trigger
+
+---
+
+### Phase 9 — UI Components (12 sprints)
+
+---
+
+#### Sprint 9.1 — Title Screen
+**Component:** `TitleScreen`
+
+**Files to create:**
+- `src/game/screens/TitleScreen.tsx`
+
+**Visual spec:**
+- **Background**: `#0A0A0A`
+- **Logo**: "25DGAME", `font-size: 4rem`, `font-weight: 900`, `color: #F0E040`, `font-family: Impact`, centered
+- **Boot animation sequence (CSS)**:
+  1. Screen flicker (0.3s): flash white then settle to black
+  2. Logo fade-in (0.8s): scale up from 0.8x to 1x + opacity 0→1
+  3. Scanline drift overlay (subtle CSS animation)
+  4. "Press any key to start" blink (0.5s interval) after 2s delay
+- **Subtitle**: "Press any key to start", `#888`, `font-size: 1rem`, centered below logo
+- **Click handler**: any key or click → dispatch `SET_SCREEN('menu')`
+
+**Accept criteria:** Boot animation plays, any key advances to menu
+
+---
+
+#### Sprint 9.2 — Main Menu
+**Component:** `MainMenu`
+
+**Files to create:**
+- `src/game/screens/MainMenu.tsx`
+
+**Visual spec:**
+- **Background**: `#0A0A0A`
+- **Title**: "25DGAME", 2rem, Impact, `#F0E040`, centered
+- **Menu items** (3 buttons, centered column):
+  | Item | Default border | Selected border | Default color | Selected color |
+  |------|---------------|-----------------|---------------|----------------|
+  | "▶ START GAME" | `#555` | `#F0E040` | `#888` | `#F0E040` |
+  | "■ ABOUT THIS" | `#555` | `#F0E040` | `#888` | `#F0E040` |
+  | "★ CREDITS" | `#555` | `#F0E040` | `#888` | `#F0E040` |
+- **Button style**: `background: transparent`, `padding: 12px 48px`, `font-size: 1.2rem`, Impact
+- **Spacing**: `gap: 16px`, `margin-bottom: 32px` after title
+
+**Navigation spec:**
+| Input | Action |
+|-------|--------|
+| ArrowUp / W | Move selection up (wrap) |
+| ArrowDown / S | Move selection down (wrap) |
+| Enter / Space | Execute selected item |
+| Mouse hover | Set selection to hovered |
+| Mouse click | Execute clicked item |
+
+**Accept criteria:** Full keyboard nav, mouse click also works, visual feedback on selection
+
+---
+
+#### Sprint 9.3 — About Modal
+**Component:** `AboutModal`
+
+**Files to create:**
+- `src/game/screens/AboutModal.tsx`
+
+**Visual spec:**
+- **Layout**: centered `max-width: 600px` div
+- **Title**: "What is This?", Impact, 2rem, `#F0E040`
+- **Body text**: "25DGAME is an interactive portfolio experience. Explore the mind, work, and identity of Abdul Majid Ridwan through a 2.5D side-scrolling game."
+- **Text style**: `#888`, Inter font, `line-height: 1.6`
+- **Back button**: "← Back", `background: transparent`, `border: 1px solid #555`, `color: #888`, monospace
+
+---
+
+#### Sprint 9.4 — Credits Screen
+**Component:** `CreditsScreen`
+
+**Files to create:**
+- `src/game/screens/CreditsScreen.tsx`
+
+**Visual spec:**
+- **Layout**: centered `max-width: 600px`
+- **Title**: "Credits", Impact, 2rem, `#F0E040`
+- **Content**: "Built with Astro, React, TypeScript, Tailwind CSS, and Framer Motion. All portfolio data is sourced from local JSON files."
+- **Data sources list**: key files and their contribution
+- **Back button**: same style as AboutModal
+
+---
+
+#### Sprint 9.5 — Pause Menu
+**Component:** `PauseMenu`
+
+**Files to create:**
+- `src/game/ui/PauseMenu.tsx`
+
+**Visual spec:**
+- **Overlay**: `rgba(0,0,0,0.8)`, full screen
+- **Menu items** (centered column, same button style as MainMenu):
+  - "▶ RESUME" — closes overlay
+  - "💾 SAVE" — triggers save
+  - "📂 LOAD" — triggers load prompt
+  - "⏭ SKIP GAME" — redirects to StandardPortfolio
+  - "⟳ RESET" — confirmation prompt → clears save + resets state
+- **Hotkey**: Escape to open/close
+- **Close when**: clicking outside menu area or pressing Escape again
+
+---
+
+#### Sprint 9.6 — Dialogue Box
+**Component:** `DialogueBox`
+
+**Files to create:**
+- `src/game/ui/DialogueBox.tsx`
+
+**Visual spec:**
+- **Position**: bottom third of screen, `width: 80%`, centered
+- **Background**: `rgba(0,0,0,0.9)`
+- **Border**: `2px solid #F0E040`
+- **Text**: typewriter effect, char-by-char at 50ms, `#f5f5f5`, monospace
+- **Cursor**: blinking `▌` at end of text while typing
+- **Skip**: press E/Enter/Space to complete current text instantly
+- **Next**: press E/Enter/Space to advance to next dialogue line
+- **Close**: last line + E → dispatch close action
+- **Name header**: top-left of box, speaker name in `#F0E040`, Impact, small
+
+---
+
+#### Sprint 9.7 — HUD
+**Component:** `HUD`
+
+**Files to create:**
+- `src/game/ui/HUD.tsx`
+
+**Visual spec:**
+- **Layout**: fixed overlay, pointer-events: none
+- **Top-left**: hamburger menu icon (☰), clickable → opens PauseMenu
+- **Top-center**: zone name, small Impact font, `#F0E040`
+- **Top-right**: lore counter "⬡ 0/9" + achievement count "⭐ 0/14", `#888`
+- **Fade behavior**: visible on mouse-move or key-press → fade out after 3s idle → 0.5s transition
+
+---
+
+#### Sprint 9.8 — Achievement Toast
+**Component:** `AchievementToast`
+
+**Files to create:**
+- `src/game/ui/AchievementToast.tsx`
+
+**Visual spec:**
+- **Position**: top-right corner
+- **Background**: `#1a1a1a`, `border: 1px solid #F0E040`
+- **Icon**: star circle, `#F0E040`
+- **Text**: "Achievement Unlocked!" in `#F0E040`, achievement name in `#f5f5f5`
+- **Animation**: slide in from right (Framer Motion `x: 100% → 0`), stay 4s, slide out
+- **Queue**: if multiple achievements trigger, stack them vertically
+
+---
+
+#### Sprint 9.9 — Interaction Prompt
+**Component:** `InteractionPrompt`
+
+**Files to create:**
+- `src/game/ui/InteractionPrompt.tsx`
+
+**Visual spec:**
+- **Position**: bottom-center, `z-index: 100`
+- **Content**: "Press **E** to interact"
+- **Style**: `#F0E040`, monospace, `background: rgba(0,0,0,0.8)`, `border: 1px solid #F0E040`, `padding: 8px 16px`, `border-radius: 4px`
+- **Animation**: pulse via Framer Motion (opacity 0.7 → 1.0 → 0.7)
+- **Show only**: when player is within `INTERACTION_DISTANCE` of an interactable
+
+---
+
+#### Sprint 9.10 — Visual Effects (Scanlines + Letterbox)
+**Components:**
+- `src/game/effects/Scanlines.tsx`
+- `src/game/effects/Letterbox.tsx`
+
+**Scanlines visual spec:**
+- **CSS**: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)`
+- **Position**: fixed overlay, full screen, `pointer-events: none`, `z-index: 9999`
+- **Subtle**: opacity 0.3
+
+**Letterbox visual spec:**
+- **Bars**: top and bottom, `background: #0A0A0A`, `height: 60px` each
+- **Animation**: bars animate in from top/bottom (Framer Motion `y: -100% → 0` / `y: 100% → 0`)
+- **Used during**: cinematic moments (Final Room reveal, major cutscenes)
+
+---
+
+#### Sprint 9.11 — Transition Polish
+**Components:** Enhance existing transitions
+
+**Files to modify:**
+- `src/game/effects/ScreenWipe.tsx` — polish timing
+- `src/game/ui/ZoneTitle.tsx` — zone name overlay on entry
+
+**ScreenWipe polish:**
+- `800ms` horizontal wipe (center → edges)
+- `600ms` zone name display with fade-in
+- `400ms` fade to scene
+- Zone name: Impact font, 3rem, `#F0E040`, "ZONE 1 — SPAWN AREA" format
+
+**ZoneTitle overlay:**
+- Appears on zone entry, positioned center, fades out after 2s
+- Name: "SPAWN AREA" in large Impact
+- Subtitle: small zone number
+
+---
+
+#### Sprint 9.12 — Standard Portfolio (Skip Game Fallback)
+**Component:** `StandardPortfolio`
+
+**Files to create:**
+- `src/game/screens/StandardPortfolio.tsx`
+
+**Visual spec:**
+- **Layout**: Single scrollable page, max 800px wide, centered
+- **Header**: name + headline + tagline
+- **Sections**: About, Skills, Projects (compact grid), Experience (timeline), Certifications (compact list)
+- **Style**: consistent with game aesthetic (dark bg, yellow accents, monospace body)
+- **Links**: GitHub, LinkedIn, Resume download
+- **Accessible**: full keyboard nav, screen reader friendly
+
+**Accept criteria:** Shows all portfolio data in readable format, accessible without game interaction
+
+---
+
+### Phase 10 — Content Integration & Tuning (7 sprints)
+
+---
+
+#### Sprint 10.1 — Replace Mock Data
+**Files to modify:**
+- All zone files: replace hardcoded mock text with data from `src/game/data/index.ts`
+
+**Data mapping:**
+| Zone | Data source |
+|------|-------------|
+| Zone 1 Terminal | `profile.json` |
+| Zone 2 Cert Frames | `licenses_certifications.json` |
+| Zone 2 Honors | `honors.json` |
+| Zone 3 Skills | `skills.json` per category |
+| Zone 4 Buildings | `projects.json` |
+| Zone 5 Stations | `experience.json` + `volunteering.json` |
+| Zone 6 Stats | Aggregate from game state + all data |
+
+---
+
+#### Sprint 10.2 — Puzzle Tuning
+**Files to modify:**
+- All puzzle components (`TimelineSort`, `AIPipeline`, `ComponentConnect`, `DebugChallenge`, `DecisionSim`)
+
+**Tuning parameters:**
+- Hint appears after 60s of inactivity
+- Skip Puzzle appears after 2 failed attempts
+- Hardcode correct answers (no randomization for MVP)
+- Visual feedback timing: 0.5s for correct, 1s for wrong
+
+---
+
+#### Sprint 10.3 — Hidden Lore Fragments
+**Components:** 9 lore fragment placements
+
+**Files to modify:**
+- Each zone file (add hidden interactables)
+
+| Fragment | Zone | Location | Trigger condition |
+|----------|------|----------|-------------------|
+| LF-1 | Zone 1 | Filing cabinet, interact 3 times | Counter-based |
+| LF-2 | Zone 2 | Offset tile behind right bookshelf | Proximity + E |
+| LF-3 | Zone 3 Hub | Under central "rug" (darker floor rect) | Proximity + E |
+| LF-4 | Zone 3 AI Lab | Behind glowing screen | Proximity + E |
+| LF-5 | Zone 3 Web Studio | Trash bin rect | Proximity + E |
+| LF-6 | Zone 3 IoT Workshop | Component drawer | Proximity + E |
+| LF-7 | Zone 4 | Gap between 2 buildings | Proximity + E |
+| LF-8 | Zone 5 | Green plant rect, interact | Proximity + E |
+| LF-9 | Zone 6 | Auto-granted on entry | Auto |
+
+---
+
+#### Sprint 10.4 — Achievement Triggers
+**Files to modify:**
+- `src/game/state/reducers/achievements.ts`
+
+**Trigger conditions:**
+| Achievement | Trigger |
+|-------------|---------|
+| First Contact | `totalInteractions >= 1` |
+| Dedicated Student | `collectedCertIds.length >= 5` |
+| Polyglot | `collectedCertIds.length >= 10` |
+| Certified | `collectedCertIds.length >= 49` |
+| AI Apprentice | `puzzlesCompleted.includes('ai-pipeline')` |
+| Web Weaver | `puzzlesCompleted.includes('debug-challenge')` |
+| IoT Tinkerer | `puzzlesCompleted.includes('component-connect')` |
+| Project Hopper | `zonesVisited.includes('zone4')` (tracked) |
+| Deep Dive | project interaction with full read |
+| Career Scout | `zonesCompleted.includes('zone5')` |
+| Decision Maker | `puzzlesCompleted.includes('decision-sim')` |
+| Inner Circle | `zonesCompleted.includes('zone6')` |
+| Lore Seeker | `loreFragments.length >= 1` |
+| Lore Master | `loreFragments.length >= 9` |
+| Speed Demon | `playTime < 900` (15 min) AND game completed |
+
+---
+
+#### Sprint 10.5 — Developer's Commentary Mode
+**Component:** Hidden reward
+
+**Files to create/modify:**
+- Enable when all 9 lore fragments collected
+- Adds toggle in pause menu: "💬 Developer Commentary"
+- Shows text overlays during gameplay explaining design decisions
+- Subtle `#888` smaller text at bottom of screen
+
+---
+
+#### Sprint 10.6 — Easter Eggs
+**Files to modify:**
+- Zone files for 2–3 easter egg placements
+
+**Ideas:**
+1. **Persona 4 reference**: TV static effect on one monitor in Zone 3, interact → "The truth is out there."
+2. **Tech joke**: In Zone 5 corridor, a sticky note: "It's not a bug, it's a feature."
+3. **Self-referential**: In Zone 4, one building labeled "25DGAME" → interact shows dev stats
+
+---
+
+#### Sprint 10.7 — Performance + Accessibility
+**Files to modify:**
+- Performance audit via Lighthouse
+- Bundle analysis via `npx astro build` output
+- CSS containment `contain: layout style paint` on world container
+- Lazy zone loading
+- `prefers-reduced-motion` fallback
+- `aria-live` regions for dynamic content
+- `aria-label` on interactables
+- Keyboard nav verification (no mouse required)
+
+---
+
+### Phase 11 — Launch (6 sprints)
+
+---
+
+#### Sprint 11.1 — Build Optimization
+- Enable compression
+- Optimize SVG output
+- Remove unused CSS via Tailwind purge
+- Image for OG meta tag
+
+---
+
+#### Sprint 11.2 — Deploy Setup
+- Deploy to Cloudflare Pages or Vercel
+- Custom domain config
+- `_redirects` / `vercel.json` for SPA fallback
+
+---
+
+#### Sprint 11.3 — SEO + Meta
+- `robots.txt`
+- `sitemap.xml`
+- Open Graph meta tags (title, description, image)
+- `favicon.ico` (could be small SVG of 25DGAME logo)
+
+---
+
+#### Sprint 11.4 — Resume Page
+- `src/pages/resume.astro`
+- Standard webpage version of resume content
+
+---
+
+#### Sprint 11.5 — README + Documentation
+- Project overview
+- Tech stack
+- Setup instructions
+- Architecture summary
+- Contribution guide
+
+---
+
+#### Sprint 11.6 — Launch + Monitor
+- Announce on LinkedIn
+- Post on GitHub
+- Share with peers for feedback
+- Monitor analytics
+- Plan iteration cycle
 
 ---
 
