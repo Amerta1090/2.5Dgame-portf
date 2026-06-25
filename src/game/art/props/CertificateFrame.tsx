@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 interface CertificateFrameProps {
   x: number;
   y: number;
@@ -5,15 +7,80 @@ interface CertificateFrameProps {
   isNearby?: boolean;
 }
 
-export function CertificateFrame({ x, y, scale = 1, isNearby }: CertificateFrameProps) {
+const PALETTE: Record<string, string> = {
+  '.': 'transparent',
+  'k': '#08080c', // Outline
+  'y': '#FFE600', // Gold Frame
+  'w': '#ffffff', // Paper white
+  'r': '#E03030', // Red seal
+  'd': '#8e8e93', // Text grey
+  'u': '#555562', // Shaded Gold
+};
+
+const SPRITE = [
+  "kkkkkkkkkkkkkkkk",
+  "kyyyyyyyyyyyyyyk",
+  "kyuuuuuuuuuuuuyk",
+  "kyuwwwwwwwwwwuyk",
+  "kyuwddddddddwuyk",
+  "kyuwwwwwwwwwwuyk",
+  "kyuwddddddddwuyk",
+  "kyuwwwwwwwwwwuyk",
+  "kyuwwddddddwwuyk",
+  "kyuwwwwwwwwwwuyk",
+  "kyuwwwrrwwwwwuyk",
+  "kyuwwwrrwwwwwuyk",
+  "kyuwwwwwwwwwwuyk",
+  "kyuuuuuuuuuuuuyk",
+  "kyyyyyyyyyyyyyyk",
+  "kkkkkkkkkkkkkkkk"
+];
+
+export function CertificateFrame({ x, y, scale = 3.5, isNearby }: CertificateFrameProps) {
+  const width = 16;
+  const height = 16;
+
+  const rects = useMemo(() => {
+    const list: React.ReactNode[] = [];
+    for (let yIndex = 0; yIndex < height; yIndex++) {
+      const row = SPRITE[yIndex] || "";
+      let startX = -1;
+      let currentColor = "";
+
+      for (let xIndex = 0; xIndex <= width; xIndex++) {
+        const char = xIndex < width ? row[xIndex] : "";
+        const color = PALETTE[char] || "transparent";
+
+        if (color !== currentColor) {
+          if (currentColor !== "transparent" && startX !== -1) {
+            const runLength = xIndex - startX;
+            list.push(
+              <rect
+                key={`${yIndex}-${startX}`}
+                x={startX}
+                y={yIndex}
+                width={runLength}
+                height={1}
+                fill={currentColor}
+              />
+            );
+          }
+          startX = xIndex;
+          currentColor = color;
+        }
+      }
+    }
+    return list;
+  }, []);
+
   return (
     <div
       style={{
         position: 'absolute',
         left: x,
         top: y,
-        width: 80 * scale,
-        height: 100 * scale,
+        width: width * scale,
+        height: height * scale,
         zIndex: 3,
       }}
     >
@@ -21,66 +88,24 @@ export function CertificateFrame({ x, y, scale = 1, isNearby }: CertificateFrame
         style={{
           position: 'absolute',
           inset: 0,
-          border: `${2 * scale}px solid #d4a017`,
-          borderRadius: 2,
-          background: '#f5f5f5',
           boxShadow: isNearby
-            ? '0 0 12px rgba(212, 160, 23, 0.5)'
-            : '0 0 8px rgba(212, 160, 23, 0.3)',
+            ? '0 0 16px #FFE600'
+            : '0 0 8px rgba(255, 230, 0, 0.25)',
           transition: 'box-shadow 0.3s',
         }}
+      />
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        width={width * scale}
+        height={height * scale}
+        style={{
+          display: 'block',
+          imageRendering: 'pixelated',
+          shapeRendering: 'crispEdges',
+        }}
       >
-        <div
-          style={{
-            margin: `${8 * scale}px`,
-            padding: `${4 * scale}px`,
-            border: `${1 * scale}px solid #ddd`,
-            height: `calc(100% - ${24 * scale}px)`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <div
-            style={{
-              width: `${20 * scale}px`,
-              height: `${20 * scale}px`,
-              borderRadius: '50%',
-              border: `${2 * scale}px solid #d4a017`,
-              marginBottom: `${4 * scale}px`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <div
-              style={{
-                width: `${8 * scale}px`,
-                height: `${8 * scale}px`,
-                borderRadius: '50%',
-                background: '#d4a017',
-              }}
-            />
-          </div>
-          <div
-            style={{
-              width: '70%',
-              height: `${2 * scale}px`,
-              background: '#d4a017',
-              margin: `${2 * scale}px 0`,
-            }}
-          />
-          <div
-            style={{
-              width: '50%',
-              height: `${2 * scale}px`,
-              background: '#ccc',
-              margin: `${2 * scale}px 0`,
-            }}
-          />
-        </div>
-      </div>
+        {rects}
+      </svg>
     </div>
   );
 }

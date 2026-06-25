@@ -1,4 +1,83 @@
-export function Zone3WebStudio() {
+import React from 'react';
+import { COLORS, DiagonalStripes } from '../designSystem';
+
+const CodeLines = React.memo(function CodeLines({ lines, color }: { lines: number; color: string }) {
+  return (
+    <div
+      style={{
+        padding: '12px 8px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+      }}
+    >
+      {Array.from({ length: lines }, (_, i) => (
+        <div
+          key={i}
+          style={{
+            height: 2,
+            width: `${30 + Math.random() * 40}%`,
+            background: color,
+            opacity: 0.2 + i * 0.08,
+            borderRadius: 1,
+          }}
+        />
+      ))}
+    </div>
+  );
+});
+
+const Monitor = React.memo(function Monitor({
+  x,
+  y,
+  width,
+  height,
+  rotate = 0,
+  lineCount = 5,
+  highlightLine = -1,
+}: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotate?: number;
+  lineCount?: number;
+  highlightLine?: number;
+}) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: x,
+        top: y,
+        width,
+        height,
+        background: '#0a0a0a',
+        border: '2px solid #3a2a1a',
+        borderRadius: 4,
+        transform: `rotate(${rotate}deg)`,
+      }}
+    >
+      <CodeLines lines={lineCount} color={COLORS.accentOrange} />
+      {highlightLine >= 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 8,
+            right: 8,
+            top: 14 + highlightLine * 21,
+            height: 2,
+            background: COLORS.primary,
+            opacity: 0.6,
+            boxShadow: `0 0 6px ${COLORS.primaryGlow}`,
+          }}
+        />
+      )}
+    </div>
+  );
+});
+
+export const Zone3WebStudio = React.memo(function Zone3WebStudio() {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       <div
@@ -9,113 +88,53 @@ export function Zone3WebStudio() {
         }}
       />
 
-      <div
-        style={{
-          position: 'absolute',
-          left: 60,
-          top: 80,
-          width: 160,
-          height: 100,
-          background: '#0a0a0a',
-          border: '2px solid #3a2a1a',
-          borderRadius: 4,
-          transform: 'rotate(-3deg)',
-        }}
+      {/* Persona-style bracket grid overlay */}
+      <svg
+        width="100%"
+        height="100%"
+        style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }}
+        preserveAspectRatio="none"
       >
-        <div
-          style={{
-            padding: '12px 8px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4,
-          }}
-        >
-          {[0, 1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              style={{
-                height: 2,
-                width: `${40 + Math.random() * 40}%`,
-                background: i === 2 ? '#E07040' : '#E07040',
-                opacity: 0.3 + i * 0.1,
-                borderRadius: 1,
-              }}
-            />
-          ))}
-        </div>
-      </div>
+        <defs>
+          <pattern id="webstudio-brackets" width={60} height={60} patternUnits="userSpaceOnUse">
+            <path d="M 0 10 L 0 0 L 10 0" fill="none" stroke={COLORS.accentOrange} strokeWidth={0.5} />
+            <path d="M 60 50 L 60 60 L 50 60" fill="none" stroke={COLORS.accentOrange} strokeWidth={0.5} />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#webstudio-brackets)" />
+      </svg>
 
-      <div
-        style={{
-          position: 'absolute',
-          left: 280,
-          top: 60,
-          width: 200,
-          height: 140,
-          background: '#0a0a0a',
-          border: '2px solid #3a2a1a',
-          borderRadius: 4,
-          transform: 'rotate(2deg)',
-        }}
+      {/* Code bracket decorative elements */}
+      <svg
+        width="100%"
+        height="100%"
+        style={{ position: 'absolute', inset: 0, opacity: 0.05, pointerEvents: 'none' }}
       >
-        <div
-          style={{
-            padding: '16px 12px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3,
-          }}
-        >
-          {[0, 1, 2, 3, 5, 6, 7].map((i) => (
-            <div
-              key={i}
-              style={{
-                height: 2,
-                width: `${50 + Math.random() * 30}%`,
-                background: i === 3 ? '#E07040' : '#E07040',
-                opacity: 0.2 + i * 0.08,
-                borderRadius: 1,
-              }}
-            />
-          ))}
-        </div>
-      </div>
+        <text x={30} y={60} fill={COLORS.accentOrange} fontSize={40} fontFamily="monospace" fontWeight={700}>{'{'}</text>
+        <text x={700} y={100} fill={COLORS.accentOrange} fontSize={40} fontFamily="monospace" fontWeight={700}>{'}'}</text>
+        <text x={200} y={250} fill={COLORS.accentOrange} fontSize={20} fontFamily="monospace" fontWeight={700}>{'</>'}</text>
+        <text x={550} y={280} fill={COLORS.accentOrange} fontSize={16} fontFamily="monospace" fontWeight={700}>{'() =>'}</text>
+      </svg>
 
+      <DiagonalStripes color={COLORS.accentOrange} opacity={0.025} width={30} />
+
+      <Monitor x={60} y={80} width={160} height={100} rotate={-3} lineCount={5} />
+      <Monitor x={280} y={60} width={200} height={140} rotate={2} lineCount={7} highlightLine={3} />
+      <Monitor x={540} y={100} width={140} height={80} rotate={-1} lineCount={4} />
+
+      {/* Geometric accent */}
       <div
         style={{
           position: 'absolute',
-          left: 540,
-          top: 100,
-          width: 140,
-          height: 80,
-          background: '#0a0a0a',
-          border: '2px solid #3a2a1a',
-          borderRadius: 4,
-          transform: 'rotate(-1deg)',
+          top: 200,
+          left: '50%',
+          width: 80,
+          height: 2,
+          background: COLORS.accentOrange,
+          opacity: 0.06,
+          transform: 'skewX(-20deg)',
         }}
-      >
-        <div
-          style={{
-            padding: '10px 8px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3,
-          }}
-        >
-          {[0, 1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              style={{
-                height: 2,
-                width: `${30 + Math.random() * 50}%`,
-                background: '#E07040',
-                opacity: 0.2 + i * 0.1,
-                borderRadius: 1,
-              }}
-            />
-          ))}
-        </div>
-      </div>
+      />
 
       <div
         style={{
@@ -147,4 +166,4 @@ export function Zone3WebStudio() {
       </div>
     </div>
   );
-}
+});

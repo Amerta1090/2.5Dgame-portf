@@ -1,6 +1,27 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { COLORS, DiagonalStripes } from '../designSystem';
 
-export function Zone5Background() {
+const TimelineDot = React.memo(function TimelineDot({ x, index }: { x: number; index: number }) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: x - 6,
+        top: 340,
+        width: 12,
+        height: 12,
+        borderRadius: '50%',
+        background: COLORS.primary,
+        boxShadow: `0 0 8px ${COLORS.primaryGlow}`,
+        zIndex: 2,
+        animation: `pulse ${2 + index * 0.3}s ease-in-out infinite`,
+        animationDelay: `${index * 0.5}s`,
+      } as React.CSSProperties}
+    />
+  );
+});
+
+export const Zone5Background = React.memo(function Zone5Background() {
   const windows = useMemo(() => {
     const elements: React.ReactNode[] = [];
     for (let x = 50; x < 4000; x += 300) {
@@ -66,28 +87,28 @@ export function Zone5Background() {
   }, []);
 
   const timelineDots = useMemo(() => {
-    const elements: React.ReactNode[] = [];
     const positions = [350, 750, 1150, 1550, 1950, 2350, 2750, 3150];
-    positions.forEach((x, i) => {
-      elements.push(
-        <div
-          key={`dot-${i}`}
-          style={{
-            position: 'absolute',
-            left: x - 6,
-            top: 340,
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            background: '#F0E040',
-            boxShadow: '0 0 8px rgba(240, 224, 64, 0.4)',
-            zIndex: 2,
-          }}
-        />,
-      );
-    });
-    return elements;
+    return positions.map((x, i) => <TimelineDot key={`dot-${i}`} x={x} index={i} />);
   }, []);
+
+  const yearLabels = useMemo(() =>
+    [2023, 2024, 2025, 2026].map((year, i) => (
+      <div
+        key={year}
+        style={{
+          position: 'absolute',
+          left: 400 + i * 800,
+          top: 16,
+          color: '#888',
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 9,
+          transform: 'translateX(-50%)',
+        }}
+      >
+        {year}
+      </div>
+    )),
+  []);
 
   return (
     <div
@@ -97,6 +118,42 @@ export function Zone5Background() {
         background: 'linear-gradient(180deg, #0f0f0f 0%, #151515 50%, #1a1a1a 100%)',
       }}
     >
+      {/* Persona-style corridor grid overlay */}
+      <svg
+        width="100%"
+        height="100%"
+        style={{ position: 'absolute', inset: 0, opacity: 0.03, pointerEvents: 'none' }}
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <pattern id="zone5-grid" width={100} height={100} patternUnits="userSpaceOnUse">
+            <path d="M 0 0 L 100 0 M 0 0 L 0 100" fill="none" stroke={COLORS.primary} strokeWidth={0.5} />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#zone5-grid)" />
+      </svg>
+
+      {/* Perspective lines */}
+      <svg
+        width="100%"
+        height="100%"
+        style={{ position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none' }}
+      >
+        {[0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000].map((x) => (
+          <line
+            key={x}
+            x1={x}
+            y1={260}
+            x2={x + 400}
+            y2={500}
+            stroke={COLORS.primary}
+            strokeWidth={0.3}
+            opacity={0.3}
+          />
+        ))}
+      </svg>
+
+      <DiagonalStripes color={COLORS.primary} opacity={0.02} width={40} />
       {wallPanels}
       {windows}
 
@@ -135,24 +192,8 @@ export function Zone5Background() {
         >
           {timelineDots}
         </div>
-
-        {[2023, 2024, 2025, 2026].map((year, i) => (
-          <div
-            key={year}
-            style={{
-              position: 'absolute',
-              left: 400 + i * 800,
-              top: 16,
-              color: '#888',
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 9,
-              transform: 'translateX(-50%)',
-            }}
-          >
-            {year}
-          </div>
-        ))}
+        {yearLabels}
       </div>
     </div>
   );
-}
+});

@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { COLORS } from '@game/art/designSystem';
 
 interface InteractionPromptProps {
   visible: boolean;
@@ -20,17 +21,44 @@ export function InteractionPrompt({ visible, label }: InteractionPromptProps) {
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 100,
-            color: '#F0E040',
             fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 14,
-            background: 'rgba(0,0,0,0.8)',
-            padding: '8px 16px',
-            borderRadius: 4,
-            border: '1px solid #F0E040',
-            animation: 'promptPulse 2s ease-in-out infinite',
+            fontSize: 13,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
           }}
         >
-          Press <span style={{ fontWeight: 700 }}>E</span> to {label || 'interact'}
+          <div
+            style={{
+              background: 'rgba(0,0,0,0.85)',
+              border: `1px solid ${COLORS.primary}`,
+              padding: '8px 18px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              transform: 'skewX(-6deg)',
+              boxShadow: `0 0 12px ${COLORS.primaryGlow}`,
+              animation: 'promptPulse 2s ease-in-out infinite',
+            } as React.CSSProperties}
+          >
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '2px 8px',
+                background: COLORS.primary,
+                color: '#000',
+                fontWeight: 700,
+                fontSize: 11,
+                transform: 'skewX(6deg)',
+                fontFamily: "'Impact', sans-serif",
+              }}
+            >
+              E
+            </span>
+            <span style={{ color: COLORS.primary, transform: 'skewX(6deg)', display: 'inline-block', fontWeight: 500 }}>
+              {label || 'INTERACT'}
+            </span>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

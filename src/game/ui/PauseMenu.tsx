@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { COLORS, DiagonalStripes, GeometricDivider, CornerBrackets, CornerBracketsBottomRight } from '@game/art/designSystem';
 
 interface PauseMenuProps {
   visible: boolean;
@@ -23,7 +24,7 @@ function buildMenuItems(commentaryUnlocked: boolean, commentaryEnabled: boolean)
   ];
   if (commentaryUnlocked) {
     items.splice(1, 0, {
-      label: commentaryEnabled ? '💬 COMMENTARY: ON' : '💬 COMMENTARY: OFF',
+      label: commentaryEnabled ? '💬 COMMENTARY ON' : '💬 COMMENTARY OFF',
       action: 'commentary',
     });
   }
@@ -48,24 +49,12 @@ export function PauseMenu({
     (i: number) => {
       const item = menuItems[i];
       switch (item.action) {
-        case 'resume':
-          onResume();
-          break;
-        case 'save':
-          onSave();
-          break;
-        case 'load':
-          onLoad();
-          break;
-        case 'skip':
-          onSkipGame();
-          break;
-        case 'reset':
-          onReset();
-          break;
-        case 'commentary':
-          onToggleCommentary?.();
-          break;
+        case 'resume': onResume(); break;
+        case 'save': onSave(); break;
+        case 'load': onLoad(); break;
+        case 'skip': onSkipGame(); break;
+        case 'reset': onReset(); break;
+        case 'commentary': onToggleCommentary?.(); break;
       }
     },
     [onResume, onSave, onLoad, onSkipGame, onReset, onToggleCommentary, menuItems],
@@ -115,7 +104,7 @@ export function PauseMenu({
             position: 'fixed',
             inset: 0,
             zIndex: 300,
-            background: 'rgba(0,0,0,0.85)',
+            background: 'rgba(0,0,0,0.88)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -124,58 +113,87 @@ export function PauseMenu({
             if (e.target === e.currentTarget) onResume();
           }}
         >
+          {/* Background decorative elements */}
+          <DiagonalStripes color={COLORS.primary} opacity={0.02} width={40} />
+          <svg
+            width="100%"
+            height="100%"
+            style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.03 }}
+          >
+            <rect x="20%" y="20%" width="60%" height="60%" fill="none" stroke={COLORS.primary} strokeWidth={1} />
+            <line x1="0" y1="0" x2="100%" y2="100%" stroke={COLORS.primary} strokeWidth={0.5} />
+          </svg>
+
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.2 }}
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 12,
-              alignItems: 'center',
+              background: 'rgba(10, 10, 10, 0.95)',
+              border: `2px solid ${COLORS.primary}`,
+              padding: '32px 48px',
+              position: 'relative',
+              boxShadow: `0 0 30px ${COLORS.primaryGlow}`,
+              minWidth: 280,
             }}
           >
-            <h2
-              style={{
-                color: '#F0E040',
-                fontFamily: "'Impact', sans-serif",
-                fontSize: '1.5rem',
-                marginBottom: 16,
-                letterSpacing: '0.05em',
-              }}
-            >
-              PAUSED
-            </h2>
+            <CornerBrackets size={16} color={COLORS.primary} />
+            <CornerBracketsBottomRight size={16} color={COLORS.primary} />
 
-            {menuItems.map((item, i) => {
-              const selected = i === index;
-              return (
-                <button
-                  key={item.action}
-                  onClick={() => {
-                    setIndex(i);
-                    execute(i);
-                  }}
-                  onMouseEnter={() => setIndex(i)}
-                  style={{
-                    background: 'transparent',
-                    border: selected ? '2px solid #F0E040' : '2px solid #555',
-                    color: selected ? '#F0E040' : '#888',
-                    padding: '10px 40px',
-                    fontSize: '1rem',
-                    fontWeight: 700,
-                    fontFamily: "'Impact', sans-serif",
-                    cursor: 'pointer',
-                    letterSpacing: '0.05em',
-                    transition: 'border-color 0.2s, color 0.2s',
-                    outline: 'none',
-                    minWidth: 200,
-                  }}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
+            <div style={{ textAlign: 'center', marginBottom: 24 }}>
+              <h2
+                style={{
+                  color: COLORS.primary,
+                  fontFamily: "'Impact', sans-serif",
+                  fontSize: '1.8rem',
+                  letterSpacing: '0.08em',
+                  margin: 0,
+                  textShadow: `0 0 20px ${COLORS.primaryGlow}`,
+                }}
+              >
+                PAUSED
+              </h2>
+              <GeometricDivider width="60%" color={COLORS.primary} thickness={1} slant />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
+              {menuItems.map((item, i) => {
+                const selected = i === index;
+                return (
+                  <motion.button
+                    key={item.action}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setIndex(i);
+                      execute(i);
+                    }}
+                    onMouseEnter={() => setIndex(i)}
+                    style={{
+                      background: selected
+                        ? `linear-gradient(135deg, ${COLORS.primary}22, transparent)`
+                        : 'transparent',
+                      border: selected ? `1px solid ${COLORS.primary}` : '1px solid #333',
+                      color: selected ? COLORS.primary : '#666',
+                      padding: '10px 40px',
+                      fontSize: '0.95rem',
+                      fontWeight: 700,
+                      fontFamily: "'Impact', sans-serif",
+                      cursor: 'pointer',
+                      letterSpacing: '0.05em',
+                      outline: 'none',
+                      minWidth: 200,
+                      transform: selected ? 'skewX(-4deg)' : 'none',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <span style={{ transform: selected ? 'skewX(4deg)' : 'none', display: 'inline-block' }}>
+                      {item.label}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
           </motion.div>
         </motion.div>
       )}

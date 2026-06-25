@@ -34,6 +34,8 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #game-root {
@@ -43,12 +45,81 @@ body {
   position: relative;
 }
 
+/* Persona-style blinking cursor/text */
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
 
+/* Interactive prompt glow pulse */
 @keyframes promptPulse {
-  0%, 100% { box-shadow: 0 0 4px rgba(240, 224, 64, 0.3); }
-  50% { box-shadow: 0 0 12px rgba(240, 224, 64, 0.6); }
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(240, 224, 64, 0.3),
+                0 0 8px rgba(240, 224, 64, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(240, 224, 64, 0.5),
+                0 0 24px rgba(240, 224, 64, 0.2);
+  }
+}
+
+/* Gentle floating animation for props */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Scanline horizontal sweep for transitions */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Typewriter cursor */
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Subtle horizontal glitch for screen effects */
+@keyframes glitch {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+}
+
+/* Slow rotation for decorative elements */
+@keyframes slowRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Fade in for zone entries */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure pixel art renders crisply */
+canvas, svg {
+  image-rendering: -webkit-optimize-contrast;
+}
+
+svg[style*="pixelated"] {
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(240, 224, 64, 0.3);
+  color: #fff;
 }

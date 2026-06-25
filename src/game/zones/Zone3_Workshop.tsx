@@ -1,10 +1,11 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+// framer-motion available if needed
 import { useGameState } from '@game/state/useGameState';
 import { useInteraction } from '@game/engine/useInteraction';
 import { ZONE_WIDTHS } from '@game/constants';
 import { Zone3HubBackground } from '@game/art/backgrounds/Zone3HubBackground';
 import { Door, doorToInteractable } from '@game/entities/Door';
+import { DialogueBox } from '@game/ui/DialogueBox';
 import { AI_Lab } from './subrooms/AI_Lab';
 import { Web_Studio } from './subrooms/Web_Studio';
 import { IoT_Workshop } from './subrooms/IoT_Workshop';
@@ -279,60 +280,14 @@ export function Zone3Workshop({ onTransition }: Zone3WorkshopProps) {
             </div>
           )}
 
-          <AnimatePresence>
-            {dialogue && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                style={{
-                  position: 'fixed',
-                  inset: 0,
-                  zIndex: 200,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: 'rgba(0,0,0,0.85)',
-                }}
-                onClick={advanceDialogue}
-              >
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.1, duration: 0.2 }}
-                  style={{
-                    background: '#0A0A0A',
-                    border: '2px solid #F0E040',
-                    borderRadius: 4,
-                    padding: '24px 32px',
-                    maxWidth: 600,
-                    width: '80%',
-                    color: '#f5f5f5',
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 16,
-                    lineHeight: 1.6,
-                  }}
-                >
-                  <p style={{ margin: 0, minHeight: '1.6em', whiteSpace: 'pre-wrap' }}>
-                    {dialogueLines[currentLine]}
-                  </p>
-                  <p
-                    style={{
-                      margin: '16px 0 0',
-                      color: '#888',
-                      fontSize: 12,
-                      textAlign: 'right',
-                    }}
-                  >
-                    {currentLine < dialogueLines.length - 1
-                      ? '[Press E to continue]'
-                      : '[Press E to close]'}
-                  </p>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <DialogueBox
+            visible={dialogue !== null}
+            lines={dialogueLines}
+            currentLine={currentLine}
+            speaker="WORKSHOP RECORDS"
+            onAdvance={advanceDialogue}
+            onClose={closeDialogue}
+          />
         </>
       )}
 

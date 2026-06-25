@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useGameState } from '@game/state/useGameState';
 import { saveGame, loadGame, clearSave, fromSaveData } from '@game/state/useSaveState';
@@ -15,17 +15,50 @@ import { AchievementToast } from '@game/ui/AchievementToast';
 import { ZoneTitle } from '@game/ui/ZoneTitle';
 import { ScreenWipe } from '@game/effects/ScreenWipe';
 import { Scanlines } from '@game/effects/Scanlines';
-import { Zone1SpawnArea } from '@game/zones/Zone1_SpawnArea';
-import { Zone2AcademyRoom } from '@game/zones/Zone2_AcademyRoom';
-import { Zone3Workshop } from '@game/zones/Zone3_Workshop';
-import { Zone4ProjectDistrict } from '@game/zones/Zone4_ProjectDistrict';
-import { Zone5CareerCorridor } from '@game/zones/Zone5_CareerCorridor';
-import { Zone6FinalRoom } from '@game/zones/Zone6_FinalRoom';
+import { Vignette } from '@game/art/designSystem';
+
+const Zone1SpawnArea = lazy(() => import('@game/zones/Zone1_SpawnArea').then(m => ({ default: m.Zone1SpawnArea })));
+const Zone2AcademyRoom = lazy(() => import('@game/zones/Zone2_AcademyRoom').then(m => ({ default: m.Zone2AcademyRoom })));
+const Zone3Workshop = lazy(() => import('@game/zones/Zone3_Workshop').then(m => ({ default: m.Zone3Workshop })));
+const Zone4ProjectDistrict = lazy(() => import('@game/zones/Zone4_ProjectDistrict').then(m => ({ default: m.Zone4ProjectDistrict })));
+const Zone5CareerCorridor = lazy(() => import('@game/zones/Zone5_CareerCorridor').then(m => ({ default: m.Zone5CareerCorridor })));
+const Zone6FinalRoom = lazy(() => import('@game/zones/Zone6_FinalRoom').then(m => ({ default: m.Zone6FinalRoom })));
+
+function LoadingZone() {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#0A0A0A',
+        color: '#333',
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 12,
+      }}
+    >
+      <span style={{ animation: 'pulse 1s ease-in-out infinite' } as React.CSSProperties}>LOADING...</span>
+    </div>
+  );
+}
 
 interface GameCanvasProps {
   toastQueue: string[];
   onToastDismiss: (id: string) => void;
 }
+
+const ZoneRenderer = React.memo(function ZoneRenderer({ currentZone, onTransition }: { currentZone: ZoneId; onTransition: (zone: ZoneId) => void }) {
+  switch (currentZone) {
+    case 'zone1': return <Zone1SpawnArea onTransition={onTransition} />;
+    case 'zone2': return <Zone2AcademyRoom onTransition={onTransition} />;
+    case 'zone3': return <Zone3Workshop onTransition={onTransition} />;
+    case 'zone4': return <Zone4ProjectDistrict onTransition={onTransition} />;
+    case 'zone5': return <Zone5CareerCorridor onTransition={onTransition} />;
+    case 'zone6': return <Zone6FinalRoom />;
+  }
+});
 
 export function GameCanvas({ toastQueue, onToastDismiss }: GameCanvasProps) {
   const { state, dispatch } = useGameState();
@@ -79,57 +112,44 @@ export function GameCanvas({ toastQueue, onToastDismiss }: GameCanvasProps) {
   const cameraSpring = useCamera(state.playerPosition.x, state.currentZone);
   const currentZoneWidth = ZONE_WIDTHS[state.currentZone];
 
-  function handleTransition(targetZone: ZoneId) {
+  const handleTransition = useCallback((targetZone: ZoneId) => {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setWipeZone(targetZone);
     setShowWipe(true);
-  }
+  }, [isTransitioning]);
 
-  function onWipeComplete() {
+  const onWipeComplete = useCallback(() => {
     dispatch({ type: 'SET_ZONE', zone: wipeZone });
     setShowWipe(false);
     setIsTransitioning(false);
-  }
+  }, [dispatch, wipeZone]);
 
-  function handlePauseResume() {
-    setShowPause(false);
-  }
-
-  function handlePauseSave() {
-    saveGame(state);
-  }
-
-  function handlePauseLoad() {
+  const handlePauseResume = useCallback(() => setShowPause(false), []);
+  const handlePauseSave = useCallback(() => saveGame(state), [state]);
+  const handlePauseLoad = useCallback(() => {
     const saved = loadGame();
     if (saved) {
       dispatch({ type: 'LOAD_STATE', state: fromSaveData(saved) as GameState });
     }
-  }
-
-  function handlePauseSkip() {
-    dispatch({ type: 'SET_SCREEN', screen: 'standard' });
-  }
-
-  function handlePauseReset() {
+  }, [dispatch]);
+  const handlePauseSkip = useCallback(() => dispatch({ type: 'SET_SCREEN', screen: 'standard' }), [dispatch]);
+  const handlePauseReset = useCallback(() => {
     clearSave();
     dispatch({ type: 'RESET' });
     setShowPause(false);
-  }
-
-  function handleToggleCommentary() {
-    dispatch({ type: 'TOGGLE_COMMENTARY' });
-  }
+  }, [dispatch]);
+  const handleToggleCommentary = useCallback(() => dispatch({ type: 'TOGGLE_COMMENTARY' }), [dispatch]);
 
   const commentaryUnlocked = state.loreFragments.length >= 9;
 
   const commentaryTexts: Record<string, string> = useMemo(() => ({
-    zone1: 'DEV COMMENT: The Spawn Area establishes the anonymous investigator premise. The terminal is the first interaction — it sets expectations for the entire game.',
-    zone2: 'DEV COMMENT: The Academy Room represents formal education. Certificates are presented as collectibles to gamify the credential display.',
-    zone3: 'DEV COMMENT: The Workshop is the mechanical heart of the game. Each subroom maps to a skill category and contains a puzzle that tests that domain knowledge.',
-    zone4: 'DEV COMMENT: Project District is the largest zone. Featured projects get bigger buildings — a visual hierarchy that mirrors portfolio prioritization.',
-    zone5: 'DEV COMMENT: The Career Corridor combines timeline visualization with a branching decision sim. The volunteering segment adds a human element.',
-    zone6: 'DEV COMMENT: The Final Room is pure narrative payoff. No puzzles, no mechanics — just reflection. The typewriter effect slows the player down for emotional impact.',
+    zone1: 'DEV COMMENT: The Spawn Area establishes the anonymous investigator premise. The terminal is the first interaction.',
+    zone2: 'DEV COMMENT: The Academy Room represents formal education. Certificates are presented as collectibles.',
+    zone3: 'DEV COMMENT: The Workshop is the mechanical heart of the game. Each subroom maps to a skill category.',
+    zone4: 'DEV COMMENT: Project District is the largest zone. Featured projects get bigger buildings.',
+    zone5: 'DEV COMMENT: The Career Corridor combines timeline visualization with a branching decision sim.',
+    zone6: 'DEV COMMENT: The Final Room is pure narrative payoff. No puzzles, no mechanics — just reflection.',
   }), []);
 
   return (
@@ -151,32 +171,18 @@ export function GameCanvas({ toastQueue, onToastDismiss }: GameCanvasProps) {
           position: 'relative',
           x: cameraSpring,
           contain: 'layout style paint',
+          willChange: 'transform',
         }}
       >
-        {state.currentZone === 'zone1' && (
-          <Zone1SpawnArea onTransition={handleTransition} />
-        )}
-        {state.currentZone === 'zone2' && (
-          <Zone2AcademyRoom onTransition={handleTransition} />
-        )}
-        {state.currentZone === 'zone3' && (
-          <Zone3Workshop onTransition={handleTransition} />
-        )}
-        {state.currentZone === 'zone4' && (
-          <Zone4ProjectDistrict onTransition={handleTransition} />
-        )}
-        {state.currentZone === 'zone5' && (
-          <Zone5CareerCorridor onTransition={handleTransition} />
-        )}
-        {state.currentZone === 'zone6' && <Zone6FinalRoom />}
+        <Suspense fallback={<LoadingZone />}>
+          <ZoneRenderer currentZone={state.currentZone} onTransition={handleTransition} />
+        </Suspense>
 
         <Player walking={moveX !== 0} />
       </motion.div>
 
       <HUD onMenuClick={() => setShowPause(true)} />
-
       <ZoneTitle zone={state.currentZone} />
-
       <AchievementToast queue={toastQueue} onDismiss={onToastDismiss} />
 
       <PauseMenu
@@ -219,8 +225,8 @@ export function GameCanvas({ toastQueue, onToastDismiss }: GameCanvasProps) {
       )}
 
       <ScreenWipe visible={showWipe} zoneName={wipeZone} onComplete={onWipeComplete} />
-
       <Scanlines />
+      <Vignette opacity={0.4} />
 
       <div aria-live="polite" aria-atomic="true" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>
         {state.currentZone} — {state.loreFragments.length} of 9 lore fragments collected — {state.achievements.length} achievements unlocked

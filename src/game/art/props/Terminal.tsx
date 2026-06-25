@@ -1,91 +1,124 @@
+import { useMemo } from 'react';
+
 interface TerminalProps {
   x: number;
   y: number;
   scale?: number;
 }
 
-export function Terminal({ x, y, scale = 1 }: TerminalProps) {
-  const w = 80 * scale;
-  const h = 60 * scale;
+const PALETTE: Record<string, string> = {
+  '.': 'transparent',
+  'k': '#08080c', // Outline
+  'c': '#1e1e24', // Cabinet base grey
+  'd': '#343440', // Cabinet highlight grey
+  'y': '#FFE600', // Persona yellow accents
+  'g': '#0e5c26', // Deep green screen
+  'l': '#39d353', // Bright matrix green text/lines
+  'u': '#8e8e93', // Metallic grey keyboard
+  'w': '#ffffff', // Reflection/white
+};
+
+const SPRITE = [
+  "................................",
+  ".......kkkkkkkkkkkkkkkkkk.......",
+  "......kddddddddddddddddddk......",
+  ".....kdccccccccccccccccccdk.....",
+  "....kdccccccccccccccccccccdk....",
+  "....kdcckkkkkkkkkkkkkkkkccdk....",
+  "....kdcckyyyyyyyyyyyyyykccdk....",
+  "....kdcckygglgggggggggykccdk....",
+  "....kdcckyglglggggglggykccdk....",
+  "....kdcckygggglgggggggykccdk....",
+  "....kdcckygggglglglglgykccdk....",
+  "....kdcckyggggggggggggykccdk....",
+  "....kdcckyyyyyyyyyyyyyykccdk....",
+  "....kdcckkkkkkkkkkkkkkkkccdk....",
+  "....kdccccccccccccccccccdk.....",
+  ".....kddddddddddddddddddk......",
+  "......kkkkkkkkkkkkkkkkkk........",
+  "............kcccck..............",
+  "............kcccck..............",
+  "...........kddddddk.............",
+  ".........kkkkkkkkkkkk...........",
+  "........kuuuuuuuuuuuuk..........",
+  "........kuuuuuuuuuuuuk..........",
+  "........kkkkkkkkkkkkkk.........."
+];
+
+export function Terminal({ x, y, scale = 2.5 }: TerminalProps) {
+  const width = 32;
+  const height = 24;
+
+  const rects = useMemo(() => {
+    const list: React.ReactNode[] = [];
+    for (let yIndex = 0; yIndex < height; yIndex++) {
+      const row = SPRITE[yIndex] || "";
+      let startX = -1;
+      let currentColor = "";
+
+      for (let xIndex = 0; xIndex <= width; xIndex++) {
+        const char = xIndex < width ? row[xIndex] : "";
+        const color = PALETTE[char] || "transparent";
+
+        if (color !== currentColor) {
+          if (currentColor !== "transparent" && startX !== -1) {
+            const runLength = xIndex - startX;
+            list.push(
+              <rect
+                key={`${yIndex}-${startX}`}
+                x={startX}
+                y={yIndex}
+                width={runLength}
+                height={1}
+                fill={currentColor}
+              />
+            );
+          }
+          startX = xIndex;
+          currentColor = color;
+        }
+      }
+    }
+    return list;
+  }, []);
+
   return (
     <div
       style={{
         position: 'absolute',
         left: x,
         top: y,
-        width: w,
-        height: h,
+        width: width * scale,
+        height: height * scale,
         zIndex: 3,
       }}
     >
-      {/* Monitor frame */}
+      {/* Screen glow shadow */}
       <div
         style={{
-          width: w,
-          height: h * 0.75,
-          background: 'linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 100%)',
-          borderRadius: 3,
-          border: '2px solid #3a3a4a',
-          position: 'relative',
-          padding: 4,
+          position: 'absolute',
+          left: 4 * scale,
+          top: 6 * scale,
+          width: 16 * scale,
+          height: 8 * scale,
+          background: '#39d353',
+          filter: 'blur(20px)',
+          opacity: 0.25,
+          pointerEvents: 'none',
+        }}
+      />
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        width={width * scale}
+        height={height * scale}
+        style={{
+          display: 'block',
+          imageRendering: 'pixelated',
+          shapeRendering: 'crispEdges',
         }}
       >
-        {/* Screen */}
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            background: '#0a0a12',
-            borderRadius: 1,
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Scan lines */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 255, 100, 0.03) 1px, rgba(0, 255, 100, 0.03) 2px)',
-            }}
-          />
-          {/* Text line */}
-          <div style={{ position: 'absolute', top: '50%', left: 8, right: 8, height: 1, background: 'rgba(0, 255, 100, 0.3)' }} />
-          {/* Blinking cursor */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: 20,
-              width: 6,
-              height: 1,
-              background: '#00ff64',
-              animation: 'pulse 1s step-end infinite',
-            }}
-          />
-        </div>
-      </div>
-      {/* Base */}
-      <div
-        style={{
-          width: w * 0.4,
-          height: h * 0.15,
-          background: '#2a2a3a',
-          margin: '0 auto',
-          borderRadius: '0 0 2px 2px',
-        }}
-      />
-      {/* Keyboard */}
-      <div
-        style={{
-          width: w * 1.1,
-          height: h * 0.1,
-          background: '#1a1a2a',
-          margin: '2px auto 0',
-          borderRadius: 1,
-          border: '1px solid #2a2a3a',
-        }}
-      />
+        {rects}
+      </svg>
     </div>
   );
 }

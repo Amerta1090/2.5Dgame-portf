@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 interface FilingCabinetProps {
   x: number;
   y: number;
@@ -5,10 +7,112 @@ interface FilingCabinetProps {
   drawers?: number;
 }
 
-export function FilingCabinet({ x, y, scale = 1, drawers = 4 }: FilingCabinetProps) {
-  const w = 60 * scale;
-  const h = 100 * scale;
-  const drawerH = (h * 0.8) / drawers;
+const PALETTE: Record<string, string> = {
+  '.': 'transparent',
+  'k': '#08080c', // Outline
+  'c': '#1d1d24', // Base cabinet grey
+  'd': '#333340', // Highlight cabinet grey
+  'y': '#FFE600', // Persona yellow accents
+  'u': '#111116', // Dark cabinet shadow
+  'w': '#ffffff', // Shine
+};
+
+const SPRITE_3_DRAWERS = [
+  "........................",
+  ".....kkkkkkkkkkkkkk.....",
+  "....kddddddddddddddk....",
+  "...kdccccccccccccccdk...",
+  "..kdccccccccccccccccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdcskyyyyyyyyyykscck..",
+  "..kdcckyyyyyyyyyykccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdccccccccccccccccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdcskyyyyyyyyyykscck..",
+  "..kdcckyyyyyyyyyykccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdccccccccccccccccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdcskyyyyyyyyyykscck..",
+  "..kdcckyyyyyyyyyykccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kuuuuuuuuuuuuuuuuukk..",
+  "..kuuuuuuuuuuuuuuuuukk..",
+  "...kkkkkkkkkkkkkkkkkk...",
+  "....kck..........kck....",
+  "....kkk..........kkk...."
+];
+
+const SPRITE_4_DRAWERS = [
+  "........................",
+  ".....kkkkkkkkkkkkkk.....",
+  "....kddddddddddddddk....",
+  "...kdccccccccccccccdk...",
+  "..kdccccccccccccccccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdcskyyyyyyyyyykscck..",
+  "..kdcckyyyyyyyyyykccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdccccccccccccccccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdcskyyyyyyyyyykscck..",
+  "..kdcckyyyyyyyyyykccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdccccccccccccccccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdcskyyyyyyyyyykscck..",
+  "..kdcckyyyyyyyyyykccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdccccccccccccccccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kdcskyyyyyyyyyykscck..",
+  "..kdcckyyyyyyyyyykccdk..",
+  "..kdcckkkkkkkkkkkkccdk..",
+  "..kuuuuuuuuuuuuuuuuukk..",
+  "..kuuuuuuuuuuuuuuuuukk..",
+  "...kkkkkkkkkkkkkkkkkk...",
+  "....kck..........kck....",
+  "....kkk..........kkk...."
+];
+
+export function FilingCabinet({ x, y, scale = 2.5, drawers = 4 }: FilingCabinetProps) {
+  const width = 24;
+  const sprite = drawers === 3 ? SPRITE_3_DRAWERS : SPRITE_4_DRAWERS;
+  const height = sprite.length;
+
+  const rects = useMemo(() => {
+    const list: React.ReactNode[] = [];
+    for (let yIndex = 0; yIndex < height; yIndex++) {
+      const row = sprite[yIndex] || "";
+      let startX = -1;
+      let currentColor = "";
+
+      for (let xIndex = 0; xIndex <= width; xIndex++) {
+        const char = xIndex < width ? row[xIndex] : "";
+        const color = PALETTE[char] || "transparent";
+
+        if (color !== currentColor) {
+          if (currentColor !== "transparent" && startX !== -1) {
+            const runLength = xIndex - startX;
+            list.push(
+              <rect
+                key={`${yIndex}-${startX}`}
+                x={startX}
+                y={yIndex}
+                width={runLength}
+                height={1}
+                fill={currentColor}
+              />
+            );
+          }
+          startX = xIndex;
+          currentColor = color;
+        }
+      }
+    }
+    return list;
+  }, [sprite, height]);
 
   return (
     <div
@@ -16,57 +120,23 @@ export function FilingCabinet({ x, y, scale = 1, drawers = 4 }: FilingCabinetPro
         position: 'absolute',
         left: x,
         top: y,
-        width: w,
-        height: h,
+        width: width * scale,
+        height: height * scale,
         zIndex: 3,
       }}
     >
-      {/* Cabinet body */}
-      <div
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        width={width * scale}
+        height={height * scale}
         style={{
-          width: w,
-          height: h * 0.9,
-          background: 'linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 100%)',
-          borderRadius: 2,
-          border: '1px solid #3a3a4a',
-          overflow: 'hidden',
+          display: 'block',
+          imageRendering: 'pixelated',
+          shapeRendering: 'crispEdges',
         }}
       >
-        {Array.from({ length: drawers }).map((_, i) => (
-          <div
-            key={`drawer-${i}`}
-            style={{
-              height: drawerH,
-              borderBottom: i < drawers - 1 ? '1px solid #3a3a4a' : undefined,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-            }}
-          >
-            {/* Drawer handle */}
-            <div
-              style={{
-                width: w * 0.3,
-                height: 4,
-                background: '#4a4a5a',
-                borderRadius: 2,
-              }}
-            />
-            {/* Subtle cyan glow on hover */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                transition: 'background 0.3s',
-              }}
-            />
-          </div>
-        ))}
-      </div>
-      {/* Legs */}
-      <div style={{ position: 'absolute', bottom: -6, left: 4, width: 6, height: 6, background: '#1a1a2a', borderRadius: '0 0 1px 1px' }} />
-      <div style={{ position: 'absolute', bottom: -6, right: 4, width: 6, height: 6, background: '#1a1a2a', borderRadius: '0 0 1px 1px' }} />
+        {rects}
+      </svg>
     </div>
   );
 }

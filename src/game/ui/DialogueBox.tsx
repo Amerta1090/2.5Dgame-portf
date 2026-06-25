@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DialogueBoxProps {
@@ -8,6 +8,315 @@ interface DialogueBoxProps {
   speaker?: string;
   onAdvance: () => void;
   onClose: () => void;
+}
+
+const COLOR_PALETTE: Record<string, string> = {
+  '.': 'transparent',
+  'k': '#0a0a0f', // Outer black outline
+  'w': '#f5f5f5', // Crisp white
+  'y': '#FFE600', // Persona yellow
+  'r': '#E03030', // Crimson red
+  's': '#f1c27d', // Face skin tone
+  'o': '#d29b5c', // Shadow skin tone
+  'c': '#24242d', // Hair / hoodie body
+  'd': '#444452', // Accent hoodie color
+  'u': '#8e8e93', // Metal/screen light gray
+  'g': '#34c759', // Matrix terminal green
+};
+
+const SPRITES = {
+  investigator: [
+    "................................",
+    ".............kkkkkk.............",
+    "...........kkcccccckk..........."
+    ,"..........kcccccccccck..........",
+    ".........kcccccccccccck.........",
+    "........kccccccccccccccc........",
+    "........kccccccckkkcccck........",
+    "........kcccccskkkkkscck........",
+    "........kccccskkkkkkksck........",
+    ".......kccccskwkwkkkwsck........",
+    ".......kccccskskskkksksck.......",
+    ".......kccccskskskkksksck.......",
+    ".......kcccccskkkkkkkksck.......",
+    ".......kccccccskkkkkkscck........",
+    "........kccccccsssssscck........",
+    "........kccccckkkkkkkcck........",
+    ".........kcccssssssscck.........",
+    "..........kccssssssscck.........",
+    "...........kcssssssck...........",
+    "..........kwwkkkkkkkwwk.........",
+    "........kkwwyyyyyyyyywwkk.......",
+    "......kkwwyyyyyyyyyyyyywwkk.....",
+    ".....kwwyyyyyyyyyyyyyyyyywwk....",
+    "....kwwyyyyyyyyyyyyyyyyyyywwk...",
+    "....kyyyyyyyyyyyyyyyyyyyyyyyk...",
+    "....kyyyyyykkkkkkkkkkkyyyyyyk...",
+    "....kyyyyykkccccccccckkyyyyyk...",
+    "....kyyyykkccccccccccckkyyyyk...",
+    "....kyyykkcccccccccccccchyyyk...",
+    "....kkkkkccccccccccccccchkkkk...",
+    "................................",
+    "................................"
+  ],
+  system: [
+    "................................",
+    "......kkkkkkkkkkkkkkkkkkkk......",
+    "....kkkkwwwwwwwwwwwwwwwwkkkk....",
+    "...kkwwggggggggggggggggggwwkk...",
+    "..kwwggggggggggggggggggggggwwk..",
+    "..kwgggggkkgggggggggggggggggwwk.",
+    ".kwggggggkkggggggggggggggggggwk.",
+    ".kwggggggkkgggggkkkkkkkkgggggwk.",
+    ".kwggggggkkgggggkkkkkkkkgggggwk.",
+    ".kwgkkkkkkkkkkggkkkkkkkkgggggwk.",
+    ".kwggggggkkgggggkkkkkkkkgggggwk.",
+    ".kwggggggkkggggggggggggggggggwk.",
+    ".kwggggggggggggggggggggggggggwk.",
+    ".kwggggggggggggggggggggggggggwk.",
+    "..kwggggggggggggggggggggggggwk..",
+    "..kwwggggggggggggggggggggggwwk..",
+    "...kkwwggggggggggggggggggwwkk...",
+    "....kkkkwwwwwwwwwwwwwwwwkkkk....",
+    "......kkkkkkkkkkkkkkkkkkkk......",
+    "...........kkkkkkkkkk...........",
+    "..........kkkkkkkkkkkk..........",
+    ".........kkkkkkkkkkkkkk.........",
+    "........kkkkkkkkkkkkkkkk........",
+    ".......kkkkkkkkkkkkkkkkkk.......",
+    "......kkkkkkkkkkkkkkkkkkkk......",
+    ".....kkkkkkkkkkkkkkkkkkkkkk.....",
+    "....kkkkkkkkkkkkkkkkkkkkkkkk....",
+    "...kkkkkkkkkkkkkkkkkkkkkkkkkk...",
+    "..kkkkkkkkkkkkkkkkkkkkkkkkkkkk..",
+    "..kkkkkkkkkkkkkkkkkkkkkkkkkkkk..",
+    "................................",
+    "................................"
+  ],
+  academy: [
+    "................................",
+    ".............kkkkk..............",
+    "............kkyywwk.............",
+    "...........kkyyyyywk............",
+    "..........kkyyyyyywk............",
+    ".........kkyyyyyyywk............",
+    ".........kyyyyyyyywk............",
+    "........kyyyyyyyywwk............",
+    ".......kyyyyyyyyywk.............",
+    "......kyyyyyyyyyywk.............",
+    ".....kyyyyyyyyyywk..............",
+    "....kyyyyyyyyyywwk..............",
+    "...kwwwwwwwwwwwwkkkkkkkk........",
+    "...kwwwwwwwwwwwkkkkkkkkkkk......",
+    "...kwwwwwwwwwwkyyyyyyyyyykk.....",
+    "...kwwwwwwwwwkyyyyyyyyyyyywk....",
+    "...kwwwwwwwwkyyyyyyyyyyyyywk....",
+    "...kwwwwwwwkyyyyyyyyyyyyyywk....",
+    "...kwwwwwwkyyyyyyyyyyyyyyywk....",
+    "...kwwwwwkyyyyyyyyyyyyyyyywk....",
+    "...kwwwwkyyyyyyyyyyyyyyyyywk....",
+    "...kwwwkyyyyyyyyyyyyyyyyyywk....",
+    "...kwwkyyyyyyyyyyyyyyyyyyywk....",
+    "...kwkyyyyyyyyyyyyyyyyyyyywk....",
+    "...kkyyyyyyyyyyyyyyyyyyyyywk....",
+    "....kkwwwwwwwwwwwwwwwwwwwwk.....",
+    "......kkkkkkkkkkkkkkkkkkkk......",
+    ".........krrrrrrrrrrrk..........",
+    "........krrrrrrrrrrrrrk.........",
+    "........krrrrrrrrrrrrrk.........",
+    ".........krrrrrrrrrrrk..........",
+    "................................"
+  ],
+  workshop: [
+    "................................",
+    "............kkkkkkkk............",
+    "..........kkkkkkkkkkkk..........",
+    "........kkkkkkuuuukkkkkk........",
+    ".......kkkkuuuuuuuuuukkkk.......",
+    "......kkkkuuuuukkkkuuuukkk......",
+    ".....kkkkuuuukk..kkuuuukkkk.....",
+    "....kkkkuuuukk....kkuuuukkkk....",
+    "....kkkuuuukk......kkuuuukkk....",
+    "...kkkuuuukk........kkuuuukkk...",
+    "...kkuuuukk..........kkuuuukk...",
+    "..kkuuuukk............kkuuuukk..",
+    "..kkuuuuk..............kkuuuuk..",
+    "..kkuuuuk..............kkuuuuk..",
+    "..kkuuuuk..............kkuuuuk..",
+    "..kkuuuuk..............kkuuuuk..",
+    "..kkuuuuk..............kkuuuuk..",
+    "..kkuuuuk..............kkuuuuk..",
+    "..kkuuuuk..............kkuuuuk..",
+    "..kkuuuukk............kkuuuukk..",
+    "...kkuuuukk..........kkuuuukk...",
+    "...kkkuuuukk........kkuuuukkk...",
+    "....kkkuuuukk......kkuuuukkk....",
+    "....kkkkuuuukk....kkuuuukkkk....",
+    ".....kkkkuuuukk..kkuuuukkkk.....",
+    "......kkkkuuuuukkkkuuuukkk......",
+    ".......kkkkuuuuuuuuuukkkk.......",
+    "........kkkkkkuuuukkkkkk........",
+    "..........kkkkkkkkkkkk..........",
+    "............kkkkkkkk............",
+    "................................",
+    "................................"
+  ],
+  project: [
+    "................................",
+    "........kkkkkkkkkkkkkk..........",
+    ".......kyyyyyyyyyyyyyyk.........",
+    "......kyyyyyyyyyyyyyyyyk........",
+    ".....kyyyyyyyyyyyyyyyyyyk.......",
+    "....kyyyyyykkkkkkkkkkkkkkkk.....",
+    "....kyyyyykyyyyyyyyyyyyyyyyk....",
+    "....kyyyyykyyyyyyyyyyyyyyyyk....",
+    "....kyyyyykyyyyykkkkkyyyyyyk....",
+    "....kyyyyykyyyykkkkkkkyyyyyk....",
+    "....kyyyyykyyykkkkkkkkkyyyyk....",
+    "....kyyyyykyykkkkkkkkkkkyyyk....",
+    "....kyyyyykyykkkkkkkkkkkyyyk....",
+    "....kyyyyykyykkkwwwwwkkkyyyk....",
+    "....kyyyyykyykkkwwwwwkkkyyyk....",
+    "....kyyyyykyykkkkkkkkkkkyyyk....",
+    "....kyyyyykyykkkkkkkkkkkyyyk....",
+    "....kyyyyykyykkkkkkkkkkkyyyk....",
+    "....kyyyyykyyykkkkkkkkkyyyyk....",
+    "....kyyyyykyyyykkkkkkkyyyyyk....",
+    "....kyyyyykyyyyykkkkkyyyyyyk....",
+    "....kyyyyykyyyyyyyyyyyyyyyyk....",
+    "....kyyyyykyyyyyyyyyyyyyyyyk....",
+    "....kyyyyykyyyyyyyyyyyyyyyyk....",
+    "....kyyyyykyyyyyyyyyyyyyyyyk....",
+    ".....kyyyykyyyyyyyyyyyyyykk.....",
+    "......kyyykyyyyyyyyyyyyykk......",
+    ".......kyykyyyyyyyyyyyykk.......",
+    "........kykyyyyyyyyyykk.........",
+    ".........kkkkkkkkkkkk...........",
+    "................................",
+    "................................"
+  ],
+  career: [
+    "................................",
+    "...........kkkkkkkk.............",
+    "..........kuuuuuuuuk............",
+    ".........kuuuuuuuuuuk...........",
+    "........kuuuukkkkuuuuk..........",
+    ".......kkkkkkkkkkkkkkkk.........",
+    "......kcccccccccccccccck........",
+    ".....kcccccccccccccccccck.......",
+    "....kcccccccccccccccccccck......",
+    "...kcccccccccccccccccccccck.....",
+    "..kcccccccccccccccccccccccck....",
+    "..kcccyyyyyyyyyyyyyyyyyyccck....",
+    "..kcccyyyyyyyyyyyyyyyyyyccck....",
+    "..kcccyykkkkkkkkkkkkkkyyccck....",
+    "..kcccyykuuuuuuuuuuuukyyccck....",
+    "..kcccyykuuuuuuuuuuuukyyccck....",
+    "..kcccyykuuuukkkkuuuukyyccck....",
+    "..kcccyykuuuukkkkuuuukyyccck....",
+    "..kcccyykuuuuuuuuuuuukyyccck....",
+    "..kcccyykuuuuuuuuuuuukyyccck....",
+    "..kcccyykkkkkkkkkkkkkkyyccck....",
+    "..kcccyyyyyyyyyyyyyyyyyyccck....",
+    "..kcccyyyyyyyyyyyyyyyyyyccck....",
+    "..kccccccccccccccccccccccck.....",
+    "...kcccccccccccccccccccccck.....",
+    "....kcccccccccccccccccccck......",
+    ".....kcccccccccccccccccck.......",
+    "......kcccccccccccccccck........",
+    ".......kkkkkkkkkkkkkkkk.........",
+    "................................",
+    "................................",
+    "................................"
+  ],
+  cognitive: [
+    "................................",
+    ".............kkk................",
+    "............krrrk...............",
+    "...........krrrrrk..............",
+    "..........krrrrrrrk.............",
+    ".........krrrrrrrrrk............",
+    "........krrrrrrrrrrrk...........",
+    ".......krrrrrrrrrrrrrk..........",
+    "......krrrrrrrrrrrrrrrk.........",
+    ".....krrrrrkkkkkkkrrrrrk........",
+    "....krrrrrkkwwwwwkkrrrrrk.......",
+    "....krrrrkkwwwwwwwkkrrrrk.......",
+    "....krrrrkkwwwwwkkkrrrrrk.......",
+    "....krrrrrkkkkkkkrrrrrrk........",
+    ".....krrrrrrrrrrrrrrrrk.........",
+    "......krrrrrrrrrrrrrrk..........",
+    "......krrrrrrrrrrrrrk...........",
+    ".......krrrrrrrrrrrk............",
+    "........krrrrrrrrrk.............",
+    ".........krrrrrrrk..............",
+    "..........krrrrrk...............",
+    "...........krrrk................",
+    "............kkk.................",
+    ".............k..................",
+    "............kyk.................",
+    "...........kyyyk................",
+    "..........kyyyyyk...............",
+    ".........kyyyyyyyk..............",
+    "..........kyyyyyk...............",
+    "...........kyyyk................",
+    "............kyk.................",
+    ".............k.................."
+  ]
+};
+
+function PixelSprite({ spriteName, size = 96 }: { spriteName: keyof typeof SPRITES; size?: number }) {
+  const sprite = SPRITES[spriteName] || SPRITES.system;
+  const width = 32;
+  const height = 32;
+
+  const rects = useMemo(() => {
+    const list: React.ReactNode[] = [];
+    for (let y = 0; y < height; y++) {
+      const row = sprite[y] || "";
+      let startX = -1;
+      let currentColor = "";
+
+      for (let x = 0; x <= width; x++) {
+        const char = x < width ? row[x] : "";
+        const color = COLOR_PALETTE[char] || "transparent";
+
+        if (color !== currentColor) {
+          if (currentColor !== "transparent" && startX !== -1) {
+            const runLength = x - startX;
+            list.push(
+              <rect
+                key={`${y}-${startX}`}
+                x={startX}
+                y={y}
+                width={runLength}
+                height={1}
+                fill={currentColor}
+              />
+            );
+          }
+          startX = x;
+          currentColor = color;
+        }
+      }
+    }
+    return list;
+  }, [sprite]);
+
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      width={size}
+      height={size}
+      style={{
+        display: "block",
+        imageRendering: "pixelated",
+        shapeRendering: "crispEdges",
+      }}
+    >
+      {rects}
+    </svg>
+  );
 }
 
 export function DialogueBox({
@@ -35,7 +344,7 @@ export function DialogueBox({
     if (displayedChars < text.length) {
       timerRef.current = setInterval(() => {
         setDisplayedChars((c) => Math.min(c + 1, text.length));
-      }, 30);
+      }, 25);
     }
 
     return () => {
@@ -68,6 +377,19 @@ export function DialogueBox({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [visible, handleAction]);
 
+  // Determine speaker type to show the correct pixel portrait
+  const spriteName = useMemo((): keyof typeof SPRITES => {
+    if (!speaker) return 'investigator';
+    const s = speaker.toUpperCase();
+    if (s.includes('SYSTEM') || s.includes('TERMINAL') || s.includes('GATE') || s.includes('BOOTH')) return 'system';
+    if (s.includes('ACADEMY') || s.includes('DIPLOMA') || s.includes('HONOR')) return 'academy';
+    if (s.includes('WORKSHOP') || s.includes('LAB') || s.includes('SKILL') || s.includes('BENCH')) return 'workshop';
+    if (s.includes('PROJECT') || s.includes('DATABASE')) return 'project';
+    if (s.includes('CAREER') || s.includes('EXPERIENCE') || s.includes('STATION')) return 'career';
+    if (s.includes('CORE') || s.includes('INNER') || s.includes('ECHO') || s.includes('MOTIVATION')) return 'cognitive';
+    return 'investigator';
+  }, [speaker]);
+
   return (
     <AnimatePresence>
       {visible && (
@@ -80,78 +402,153 @@ export function DialogueBox({
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 200,
+            zIndex: 900,
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-end',
             justifyContent: 'center',
-            background: 'rgba(0,0,0,0.85)',
+            background: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(3px)',
+            paddingBottom: '4vh',
           }}
         >
+          {/* Persona-style slanted container wrapper */}
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.2 }}
+            initial={{ y: 80, rotate: -2, opacity: 0 }}
+            animate={{ y: 0, rotate: -1, opacity: 1 }}
+            exit={{ y: 80, rotate: -2, opacity: 0 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 120 }}
             style={{
-              background: '#0A0A0A',
-              border: '2px solid #F0E040',
-              borderRadius: 4,
+              background: '#0E0E0E',
+              border: '3px solid #FFE600',
+              boxShadow: '10px 10px 0px #E03030',
               padding: '24px 32px',
-              maxWidth: 600,
-              width: '80%',
+              maxWidth: 900,
+              width: '90%',
+              minHeight: 180,
               color: '#f5f5f5',
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 16,
-              lineHeight: 1.6,
               position: 'relative',
+              display: 'flex',
+              gap: 24,
+              alignItems: 'center',
+              transform: 'skewX(-4deg)', // Slanted container
             }}
           >
-            {speaker && (
+            {/* Portrait area */}
+            <div
+              style={{
+                flexShrink: 0,
+                width: 104,
+                height: 104,
+                border: '3px solid #FFE600',
+                background: '#1A1A1A',
+                boxShadow: '4px 4px 0px #E03030',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                position: 'relative',
+                transform: 'skewX(4deg) rotate(-2deg)', // Undo slant + custom rotate
+              }}
+            >
+              {/* Halftone backdrop */}
               <div
                 style={{
                   position: 'absolute',
-                  top: -12,
-                  left: 16,
-                  background: '#0A0A0A',
-                  padding: '0 8px',
-                  color: '#F0E040',
-                  fontWeight: 700,
-                  fontFamily: "'Impact', sans-serif",
-                  fontSize: 12,
+                  inset: 0,
+                  opacity: 0.15,
+                  background: 'radial-gradient(circle, #FFE600 20%, transparent 20%)',
+                  backgroundSize: '8px 8px',
+                  animation: 'pulse 2s ease-in-out infinite',
                 }}
-              >
-                {speaker}
-              </div>
-            )}
+              />
+              <PixelSprite spriteName={spriteName} size={96} />
+            </div>
 
-            <p style={{ margin: 0, minHeight: '1.6em', whiteSpace: 'pre-wrap' }}>
-              {text.slice(0, displayedChars)}
-              {isTyping && (
-                <span
+            {/* Content area */}
+            <div
+              style={{
+                flexGrow: 1,
+                transform: 'skewX(4deg)', // Undo slant for readability
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
+              {/* Speaker Label */}
+              {speaker && (
+                <div
                   style={{
-                    color: '#F0E040',
-                    animation: 'blink 0.5s step-end infinite',
+                    position: 'absolute',
+                    top: -24,
+                    left: 20,
+                    background: '#FFE600',
+                    color: '#0E0E0E',
+                    padding: '4px 16px',
+                    fontWeight: 900,
+                    fontFamily: "'Impact', sans-serif",
+                    fontSize: 14,
+                    letterSpacing: '0.05em',
+                    boxShadow: '4px 4px 0px #E03030',
+                    transform: 'skewX(-6deg) rotate(-1.5deg)',
                   }}
                 >
-                  ▌
-                </span>
+                  {speaker}
+                </div>
               )}
-            </p>
 
-            {!isTyping && (
               <p
                 style={{
-                  margin: '16px 0 0',
-                  color: '#888',
-                  fontSize: 12,
-                  textAlign: 'right',
+                  margin: 0,
+                  fontSize: 16,
+                  lineHeight: 1.6,
+                  minHeight: '2.5em',
+                  whiteSpace: 'pre-wrap',
+                  color: '#FFFFFF',
+                  fontWeight: 500,
+                  textShadow: '1px 1px 1px #000',
                 }}
               >
-                {isLastLine ? '[Press E to close]' : '[Press E to continue]'}
+                {text.slice(0, displayedChars)}
+                {isTyping && (
+                  <span
+                    style={{
+                      color: '#FFE600',
+                      animation: 'pulse 0.4s ease-in-out infinite',
+                    }}
+                  >
+                    █
+                  </span>
+                )}
               </p>
-            )}
+
+              <div
+                style={{
+                  marginTop: 12,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderTop: '1px solid rgba(255, 230, 0, 0.15)',
+                  paddingTop: 8,
+                }}
+              >
+                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>
+                  2.5D Cognitive System v1.9
+                </div>
+                <div
+                  style={{
+                    color: '#FFE600',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    animation: !isTyping ? 'pulse 1s ease-in-out infinite' : 'none',
+                  }}
+                >
+                  {isLastLine ? '[E] Close Dialog' : '[E] Continue'}
+                </div>
+              </div>
+            </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
+

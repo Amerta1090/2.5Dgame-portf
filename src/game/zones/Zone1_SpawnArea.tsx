@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useGameState } from '@game/state/useGameState';
 import { useInteraction } from '@game/engine/useInteraction';
 import { ZONE_WIDTHS } from '@game/constants';
@@ -7,6 +7,7 @@ import { Zone1Background } from '@game/art/backgrounds/Zone1Background';
 import { Terminal } from '@game/art/props/Terminal';
 import { FilingCabinet } from '@game/art/props/FilingCabinet';
 import { Door } from '@game/entities/Door';
+import { DialogueBox } from '@game/ui/DialogueBox';
 import { getAllGameData } from '@game/data';
 import type { ZoneId } from '@game/types';
 
@@ -177,60 +178,14 @@ export function Zone1SpawnArea({ onTransition }: Zone1SpawnAreaProps) {
         </div>
       )}
 
-      <AnimatePresence>
-        {dialogue && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 200,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(0,0,0,0.85)',
-            }}
-            onClick={advanceDialogue}
-          >
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.2 }}
-              style={{
-                background: '#0A0A0A',
-                border: '2px solid #F0E040',
-                borderRadius: 4,
-                padding: '24px 32px',
-                maxWidth: 600,
-                width: '80%',
-                color: '#f5f5f5',
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 16,
-                lineHeight: 1.6,
-              }}
-            >
-              <p style={{ margin: 0, minHeight: '1.6em', whiteSpace: 'pre-wrap' }}>
-                {dialogueLines[currentLine]}
-              </p>
-              <p
-                style={{
-                  margin: '16px 0 0',
-                  color: '#888',
-                  fontSize: 12,
-                  textAlign: 'right',
-                }}
-              >
-                {currentLine < dialogueLines.length - 1
-                  ? '[Press E to continue]'
-                  : '[Press E to close]'}
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <DialogueBox
+        visible={dialogue !== null}
+        lines={dialogueLines}
+        currentLine={currentLine}
+        speaker={dialogue === 'terminal' ? 'SYSTEM TERMINAL' : 'INVESTIGATION LOG'}
+        onAdvance={advanceDialogue}
+        onClose={closeDialogue}
+      />
 
       {easterEgg && (
         <motion.div

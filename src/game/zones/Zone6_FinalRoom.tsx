@@ -132,7 +132,7 @@ export function Zone6FinalRoom() {
       </div>
 
       <AnimatePresence>
-        {(phase === 'monologue' || phase === 'stats') && (
+         {(phase === 'monologue' || phase === 'stats') && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -142,32 +142,55 @@ export function Zone6FinalRoom() {
               inset: 0,
               zIndex: 200,
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-end',
               justifyContent: 'center',
-              background: 'rgba(0,0,0,0.85)',
+              background: 'rgba(0, 0, 0, 0.65)',
+              backdropFilter: 'blur(3px)',
+              paddingBottom: '4vh',
             }}
             onClick={advanceLine}
           >
             <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.3 }}
+              initial={{ y: 80, rotate: -1.5, opacity: 0 }}
+              animate={{ y: 0, rotate: -1, opacity: 1 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 120 }}
               style={{
-                background: '#0A0A0A',
-                border: '2px solid #F0E040',
-                borderRadius: 4,
+                background: '#0E0E0E',
+                border: '3px solid #FFE600',
+                boxShadow: '10px 10px 0px #E03030',
                 padding: '32px 40px',
-                maxWidth: 640,
+                maxWidth: 700,
                 width: '80%',
                 color: '#f5f5f5',
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 16,
-                lineHeight: 1.8,
-                maxHeight: '70vh',
+                position: 'relative',
+                transform: 'skewX(-4deg)',
+                maxHeight: '80vh',
                 overflowY: 'auto',
               }}
             >
-              {phase === 'monologue' && (
+              {/* Speaker Label */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: -24,
+                  left: 20,
+                  background: '#FFE600',
+                  color: '#0E0E0E',
+                  padding: '4px 16px',
+                  fontWeight: 900,
+                  fontFamily: "'Impact', sans-serif",
+                  fontSize: 14,
+                  letterSpacing: '0.05em',
+                  boxShadow: '4px 4px 0px #E03030',
+                  transform: 'skewX(-6deg) rotate(-1.5deg)',
+                }}
+              >
+                {phase === 'monologue' ? 'THE COGNITIVE CORE' : 'JOURNEY SUMMARY'}
+              </div>
+
+              {/* Unskewed Content Wrapper */}
+              <div style={{ transform: 'skewX(4deg)', fontFamily: "'JetBrains Mono', monospace" }}>
+                {phase === 'monologue' && (
                 <>
                   <div
                     style={{
@@ -316,6 +339,7 @@ export function Zone6FinalRoom() {
                   </p>
                 </>
               )}
+              </div>
             </motion.div>
           </motion.div>
         )}
