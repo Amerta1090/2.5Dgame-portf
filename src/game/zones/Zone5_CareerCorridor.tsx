@@ -47,6 +47,7 @@ export function Zone5CareerCorridor({ onTransition }: Zone5CareerCorridorProps) 
   const [currentLine, setCurrentLine] = useState(0);
   const [activeStation, setActiveStation] = useState<Experience | null>(null);
   const [showDecision, setShowDecision] = useState(false);
+  const [easterEgg, setEasterEgg] = useState<string | null>(null);
 
   const gameData = useMemo(() => getAllGameData(), []);
   const experiences = useMemo(() => gameData.experiences, [gameData]);
@@ -336,6 +337,29 @@ export function Zone5CareerCorridor({ onTransition }: Zone5CareerCorridorProps) 
       </div>
 
       <div
+        onClick={() => setEasterEgg(easterEgg ? null : '"It\'s not a bug, it\'s a feature." — found on a sticky note')}
+        style={{
+          position: 'absolute',
+          left: 3100,
+          top: 190,
+          width: 28,
+          height: 28,
+          zIndex: 5,
+          background: 'rgba(240, 224, 64, 0.06)',
+          border: '1px solid rgba(240, 224, 64, 0.2)',
+          borderRadius: 1,
+          cursor: 'pointer',
+          transform: 'rotate(-3deg)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title="A sticky note..."
+      >
+        <span style={{ color: 'rgba(240, 224, 64, 0.3)', fontSize: 8 }}>📝</span>
+      </div>
+
+      <div
         style={{
           position: 'absolute',
           left: loreX,
@@ -476,6 +500,44 @@ export function Zone5CareerCorridor({ onTransition }: Zone5CareerCorridorProps) 
           />
         )}
       </AnimatePresence>
+
+      {easterEgg && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          onClick={() => setEasterEgg(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 400,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.7)',
+            cursor: 'pointer',
+          }}
+        >
+          <div
+            style={{
+              color: '#f5f5f5',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 16,
+              background: 'rgba(0,0,0,0.95)',
+              border: '2px solid rgba(240,224,64,0.2)',
+              borderRadius: 4,
+              padding: '24px 40px',
+              textAlign: 'center',
+              fontStyle: 'italic',
+            }}
+          >
+            {easterEgg}
+            <div style={{ marginTop: 16, fontSize: 11, color: '#666', fontStyle: 'normal' }}>
+              [click to dismiss]
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }

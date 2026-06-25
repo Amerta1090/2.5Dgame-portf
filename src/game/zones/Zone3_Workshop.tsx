@@ -91,6 +91,14 @@ export function Zone3Workshop({ onTransition }: Zone3WorkshopProps) {
     [dispatch],
   );
 
+  const handleSubroomLore = useCallback(
+    (loreId: string) => {
+      if (state.loreFragments.includes(loreId)) return;
+      dispatch({ type: 'COLLECT_LORE', id: loreId });
+    },
+    [dispatch, state.loreFragments],
+  );
+
   const closeDialogue = useCallback(() => {
     setDialogue(null);
     setCurrentLine(0);
@@ -332,6 +340,7 @@ export function Zone3Workshop({ onTransition }: Zone3WorkshopProps) {
         <AI_Lab
           onPuzzleComplete={handleSubroomPuzzleComplete}
           puzzleCompleted={puzzlesCompleted.includes('ai-pipeline')}
+          onLoreCollect={handleSubroomLore}
         />
       )}
 
@@ -339,6 +348,7 @@ export function Zone3Workshop({ onTransition }: Zone3WorkshopProps) {
         <Web_Studio
           onPuzzleComplete={handleSubroomPuzzleComplete}
           puzzleCompleted={puzzlesCompleted.includes('debug-challenge')}
+          onLoreCollect={handleSubroomLore}
         />
       )}
 
@@ -346,6 +356,7 @@ export function Zone3Workshop({ onTransition }: Zone3WorkshopProps) {
         <IoT_Workshop
           onPuzzleComplete={handleSubroomPuzzleComplete}
           puzzleCompleted={puzzlesCompleted.includes('component-connect')}
+          onLoreCollect={handleSubroomLore}
         />
       )}
 

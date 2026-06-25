@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGameState } from '@game/state/useGameState';
 import { saveGame, loadGame, clearSave, fromSaveData } from '@game/state/useSaveState';
@@ -117,6 +117,21 @@ export function GameCanvas({ toastQueue, onToastDismiss }: GameCanvasProps) {
     setShowPause(false);
   }
 
+  function handleToggleCommentary() {
+    dispatch({ type: 'TOGGLE_COMMENTARY' });
+  }
+
+  const commentaryUnlocked = state.loreFragments.length >= 9;
+
+  const commentaryTexts: Record<string, string> = useMemo(() => ({
+    zone1: 'DEV COMMENT: The Spawn Area establishes the anonymous investigator premise. The terminal is the first interaction — it sets expectations for the entire game.',
+    zone2: 'DEV COMMENT: The Academy Room represents formal education. Certificates are presented as collectibles to gamify the credential display.',
+    zone3: 'DEV COMMENT: The Workshop is the mechanical heart of the game. Each subroom maps to a skill category and contains a puzzle that tests that domain knowledge.',
+    zone4: 'DEV COMMENT: Project District is the largest zone. Featured projects get bigger buildings — a visual hierarchy that mirrors portfolio prioritization.',
+    zone5: 'DEV COMMENT: The Career Corridor combines timeline visualization with a branching decision sim. The volunteering segment adds a human element.',
+    zone6: 'DEV COMMENT: The Final Room is pure narrative payoff. No puzzles, no mechanics — just reflection. The typewriter effect slows the player down for emotional impact.',
+  }), []);
+
   return (
     <div
       style={{
@@ -128,11 +143,14 @@ export function GameCanvas({ toastQueue, onToastDismiss }: GameCanvasProps) {
       }}
     >
       <motion.div
+        role="region"
+        aria-label={`Zone: ${state.currentZone}`}
         style={{
           width: currentZoneWidth,
           height: '100vh',
           position: 'relative',
           x: cameraSpring,
+          contain: 'layout style paint',
         }}
       >
         {state.currentZone === 'zone1' && (
@@ -168,11 +186,45 @@ export function GameCanvas({ toastQueue, onToastDismiss }: GameCanvasProps) {
         onLoad={handlePauseLoad}
         onSkipGame={handlePauseSkip}
         onReset={handlePauseReset}
+        commentaryUnlocked={commentaryUnlocked}
+        commentaryEnabled={state.developerCommentary}
+        onToggleCommentary={handleToggleCommentary}
       />
+
+      {state.developerCommentary && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 8,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 500,
+            color: '#888',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 10,
+            background: 'rgba(0,0,0,0.8)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 4,
+            padding: '6px 14px',
+            maxWidth: '70%',
+            textAlign: 'center',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {commentaryTexts[state.currentZone]}
+        </div>
+      )}
 
       <ScreenWipe visible={showWipe} zoneName={wipeZone} onComplete={onWipeComplete} />
 
       <Scanlines />
+
+      <div aria-live="polite" aria-atomic="true" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>
+        {state.currentZone} — {state.loreFragments.length} of 9 lore fragments collected — {state.achievements.length} achievements unlocked
+      </div>
     </div>
   );
 }

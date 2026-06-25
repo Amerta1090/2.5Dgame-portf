@@ -14,6 +14,7 @@ function toSaveData(state: GameState): SaveData {
     achievements: state.achievements,
     playTime: state.playTime,
     totalInteractions: state.totalInteractions,
+    developerCommentary: state.developerCommentary,
   };
 }
 
@@ -27,6 +28,7 @@ function fromSaveData(saved: SaveData): Partial<GameState> {
     achievements: saved.achievements,
     playTime: saved.playTime,
     totalInteractions: saved.totalInteractions,
+    developerCommentary: saved.developerCommentary,
   };
 }
 

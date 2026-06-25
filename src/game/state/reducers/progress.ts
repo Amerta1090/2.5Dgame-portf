@@ -30,6 +30,9 @@ export function progressReducer(state: GameState, action: GameAction): GameState
     case 'SET_PLAYER_FACING':
       return { ...state, playerFacing: action.facing };
 
+    case 'TOGGLE_COMMENTARY':
+      return { ...state, developerCommentary: !state.developerCommentary };
+
     case 'TICK_TIME':
       return { ...state, playTime: state.playTime + 1 };
 
@@ -53,6 +56,7 @@ export function progressReducer(state: GameState, action: GameAction): GameState
         achievements: [],
         playTime: 0,
         totalInteractions: 0,
+        developerCommentary: false,
       };
 
     default:

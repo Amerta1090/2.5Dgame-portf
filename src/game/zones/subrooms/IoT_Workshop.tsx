@@ -8,20 +8,29 @@ import { ComponentConnect } from '@game/puzzles/ComponentConnect';
 interface IoT_WorkshopProps {
   onPuzzleComplete: (id: string) => void;
   puzzleCompleted: boolean;
+  onLoreCollect?: (id: string) => void;
 }
 
-export function IoT_Workshop({ onPuzzleComplete, puzzleCompleted }: IoT_WorkshopProps) {
+export function IoT_Workshop({ onPuzzleComplete, puzzleCompleted, onLoreCollect }: IoT_WorkshopProps) {
   const skills = useMemo(
     () => getAllGameData().skills.find((c) => c.name === 'IoT & Embedded Systems'),
     [],
   );
   const [showPuzzle, setShowPuzzle] = useState(false);
   const [showDetail, setShowDetail] = useState<string | null>(null);
+  const [loreText, setLoreText] = useState<string | null>(null);
 
   const handlePuzzleDone = useCallback(() => {
     onPuzzleComplete('component-connect');
     setShowPuzzle(false);
   }, [onPuzzleComplete]);
+
+  const handleLoreClick = useCallback(() => {
+    if (!onLoreCollect || loreText) return;
+    onLoreCollect('lf-6');
+    setLoreText('Inside a component drawer: a note reads "Check the parts bin — every component has a story." — LF-6');
+    setTimeout(() => setLoreText(null), 4000);
+  }, [onLoreCollect, loreText]);
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
@@ -167,6 +176,30 @@ export function IoT_Workshop({ onPuzzleComplete, puzzleCompleted }: IoT_Workshop
         </div>
       )}
 
+      <div
+        onClick={handleLoreClick}
+        style={{
+          position: 'absolute',
+          left: 140,
+          top: 230,
+          width: 44,
+          height: 28,
+          zIndex: 5,
+          border: loreText ? '1px solid rgba(64,224,96,0.6)' : '1px solid rgba(64,224,96,0.2)',
+          borderRadius: 2,
+          background: 'rgba(64,224,96,0.06)',
+          cursor: onLoreCollect && !loreText ? 'pointer' : 'default',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title="Check the components drawer"
+      >
+        <span style={{ color: 'rgba(64,224,96,0.4)', fontSize: 11 }}>
+          {loreText ? '✓' : '⚙'}
+        </span>
+      </div>
+
       <AnimatePresence>
         {showPuzzle && (
           <ComponentConnect
@@ -200,6 +233,30 @@ export function IoT_Workshop({ onPuzzleComplete, puzzleCompleted }: IoT_Workshop
             {skills?.skills.find((s) => s.name === showDetail)?.name}
             {' — '}
             Proficiency: {skills?.skills.find((s) => s.name === showDetail)?.proficiency}/5
+          </motion.div>
+        )}
+
+        {loreText && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            style={{
+              position: 'absolute',
+              left: 60,
+              bottom: 40,
+              zIndex: 10,
+              color: '#E0E040',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              background: 'rgba(0,0,0,0.9)',
+              border: '1px solid rgba(240,224,64,0.3)',
+              borderRadius: 4,
+              padding: '8px 12px',
+              maxWidth: 400,
+            }}
+          >
+            {loreText}
           </motion.div>
         )}
       </AnimatePresence>

@@ -24,6 +24,7 @@ const initialState: GameState = {
   achievements: [],
   playTime: 0,
   totalInteractions: 0,
+  developerCommentary: false,
 };
 
 export const GameContext = createContext<{

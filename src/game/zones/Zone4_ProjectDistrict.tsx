@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useGameState } from '@game/state/useGameState';
 import { useInteraction } from '@game/engine/useInteraction';
 import { ZONE_WIDTHS } from '@game/constants';
@@ -43,6 +43,8 @@ export function Zone4ProjectDistrict({ onTransition }: Zone4ProjectDistrictProps
   const { state, dispatch } = useGameState();
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [visitedProjects, setVisitedProjects] = useState<Set<string>>(new Set());
+  const [loreText, setLoreText] = useState<string | null>(null);
+  const loreCollected = useRef(false);
 
   const gameData = useMemo(() => getAllGameData(), []);
   const projects = useMemo(() => gameData.projects, [gameData]);
@@ -53,6 +55,7 @@ export function Zone4ProjectDistrict({ onTransition }: Zone4ProjectDistrictProps
   const visitedCount = visitedProjects.size;
   const projectsMet = visitedCount >= 3;
   const doorX = zoneWidth - 120;
+  const loreX = 2700;
 
   const buildingInteractables = useMemo(
     () =>
@@ -179,6 +182,37 @@ export function Zone4ProjectDistrict({ onTransition }: Zone4ProjectDistrictProps
         />
       ))}
 
+      <div
+        onClick={() => {
+          if (loreCollected.current) return;
+          loreCollected.current = true;
+          dispatch({ type: 'COLLECT_LORE', id: 'lf-7' });
+          setLoreText('Graffiti on a wall between two buildings: "What drives project selection? The desire to solve real problems." — LF-7');
+          setTimeout(() => setLoreText(null), 5000);
+        }}
+        style={{
+          position: 'absolute',
+          left: loreX,
+          bottom: 80,
+          width: 50,
+          height: 40,
+          zIndex: 5,
+          background: loreCollected.current ? 'rgba(240,224,64,0.08)' : 'rgba(240,224,64,0.03)',
+          border: loreCollected.current ? '1px solid rgba(240,224,64,0.4)' : '1px solid rgba(240,224,64,0.15)',
+          borderRadius: 2,
+          cursor: loreCollected.current ? 'default' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'border-color 0.3s, background 0.3s',
+        }}
+        title="There's a gap between projects"
+      >
+        <span style={{ color: 'rgba(240,224,64,0.3)', fontSize: 14 }}>
+          {loreCollected.current ? '✓' : '≡'}
+        </span>
+      </div>
+
       <Door
         x={doorX}
         y={280}
@@ -234,6 +268,32 @@ export function Zone4ProjectDistrict({ onTransition }: Zone4ProjectDistrictProps
           />
         )}
       </AnimatePresence>
+
+      {loreText && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
+          style={{
+            position: 'fixed',
+            bottom: 40,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 200,
+            color: '#E0E040',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+            background: 'rgba(0,0,0,0.9)',
+            border: '1px solid rgba(240,224,64,0.3)',
+            borderRadius: 4,
+            padding: '8px 16px',
+            maxWidth: 500,
+            textAlign: 'center',
+          }}
+        >
+          {loreText}
+        </motion.div>
+      )}
     </div>
   );
 }

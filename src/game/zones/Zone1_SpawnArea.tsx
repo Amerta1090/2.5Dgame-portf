@@ -19,6 +19,7 @@ export function Zone1SpawnArea({ onTransition }: Zone1SpawnAreaProps) {
   const [dialogue, setDialogue] = useState<null | 'terminal' | 'lore'>(null);
   const [dialogueLines, setDialogueLines] = useState<string[]>([]);
   const [currentLine, setCurrentLine] = useState(0);
+  const [easterEgg, setEasterEgg] = useState<string | null>(null);
 
   const profileData = useMemo(() => getAllGameData().profile, []);
   const zoneWidth = ZONE_WIDTHS.zone1;
@@ -101,7 +102,6 @@ export function Zone1SpawnArea({ onTransition }: Zone1SpawnAreaProps) {
 
   const isNearbyTerminal = nearby?.id === 'terminal';
   const isNearbyCabinet = nearby?.id === 'filing-cabinet';
-  const isNearbyDoor = nearby?.id === 'door-1';
   const showPrompt = !dialogue && (isNearbyTerminal || isNearbyCabinet);
 
   return (
@@ -120,11 +120,39 @@ export function Zone1SpawnArea({ onTransition }: Zone1SpawnAreaProps) {
         <FilingCabinet x={0} y={0} drawers={3} />
       </div>
 
+      <div
+        onClick={() => setEasterEgg(
+          easterEgg
+            ? null
+            : `25DGAME v${import.meta.env?.PACKAGE_VERSION || '1.0'} — Built with Astro + React + TypeScript + Framer Motion. ${state.playTime > 0 ? `Session time: ${Math.floor(state.playTime / 60)}m` : 'You just started!'}`
+        )}
+        style={{
+          position: 'absolute',
+          left: 1600,
+          top: 340,
+          width: 40,
+          height: 60,
+          zIndex: 4,
+          border: '1px solid rgba(0, 255, 100, 0.12)',
+          borderRadius: 2,
+          background: 'rgba(0, 255, 100, 0.03)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title="A hidden dev terminal..."
+      >
+        <span style={{ color: 'rgba(0, 255, 100, 0.3)', fontSize: 9, fontFamily: "'JetBrains Mono', monospace" }}>
+          &lt;/&gt;
+        </span>
+      </div>
+
       <Door
         x={zoneWidth - 120}
         y={300}
         targetZone={targetZone}
-        isNearby={isNearbyDoor}
+        isNearby={nearby?.id === 'door-1'}
         onTransition={onTransition}
       />
 
@@ -203,6 +231,47 @@ export function Zone1SpawnArea({ onTransition }: Zone1SpawnAreaProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {easterEgg && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setEasterEgg(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 400,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.7)',
+            cursor: 'pointer',
+          }}
+        >
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            style={{
+              background: '#0A0A0A',
+              border: '1px solid rgba(0, 255, 100, 0.3)',
+              borderRadius: 4,
+              padding: '24px 32px',
+              maxWidth: 500,
+              color: '#00ff64',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 13,
+              lineHeight: 1.6,
+              textAlign: 'center',
+            }}
+          >
+            {easterEgg}
+            <div style={{ marginTop: 16, color: '#555', fontSize: 11 }}>
+              [click to dismiss]
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </>
   );
 }

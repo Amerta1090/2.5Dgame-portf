@@ -7,20 +7,30 @@ import { DebugChallenge } from '@game/puzzles/DebugChallenge';
 interface Web_StudioProps {
   onPuzzleComplete: (id: string) => void;
   puzzleCompleted: boolean;
+  onLoreCollect?: (id: string) => void;
 }
 
-export function Web_Studio({ onPuzzleComplete, puzzleCompleted }: Web_StudioProps) {
+export function Web_Studio({ onPuzzleComplete, puzzleCompleted, onLoreCollect }: Web_StudioProps) {
   const skills = useMemo(
     () => getAllGameData().skills.find((c) => c.name === 'Web Development'),
     [],
   );
   const [showPuzzle, setShowPuzzle] = useState(false);
   const [showDetail, setShowDetail] = useState<string | null>(null);
+  const [loreText, setLoreText] = useState<string | null>(null);
+  const [easterEgg, setEasterEgg] = useState<string | null>(null);
 
   const handlePuzzleDone = useCallback(() => {
     onPuzzleComplete('debug-challenge');
     setShowPuzzle(false);
   }, [onPuzzleComplete]);
+
+  const handleLoreClick = useCallback(() => {
+    if (!onLoreCollect || loreText) return;
+    onLoreCollect('lf-5');
+    setLoreText('In the trash bin: a crumpled note reads "Not all treasure is gold — some are lessons." — LF-5');
+    setTimeout(() => setLoreText(null), 4000);
+  }, [onLoreCollect, loreText]);
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
@@ -164,6 +174,54 @@ export function Web_Studio({ onPuzzleComplete, puzzleCompleted }: Web_StudioProp
         </div>
       )}
 
+      <div
+        onClick={() => setEasterEgg(easterEgg ? null : '"The truth is out there."')}
+        style={{
+          position: 'absolute',
+          left: 480,
+          top: 200,
+          width: 50,
+          height: 35,
+          zIndex: 5,
+          border: '1px solid rgba(224,112,64,0.15)',
+          borderRadius: 2,
+          background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(224,112,64,0.04) 2px, rgba(224,112,64,0.04) 4px)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title="A familiar-looking monitor..."
+      >
+        <span style={{ color: 'rgba(224,112,64,0.25)', fontSize: 9, fontFamily: "'JetBrains Mono', monospace" }}>
+          TV
+        </span>
+      </div>
+
+      <div
+        onClick={handleLoreClick}
+        style={{
+          position: 'absolute',
+          right: 40,
+          bottom: 60,
+          width: 36,
+          height: 30,
+          zIndex: 5,
+          border: loreText ? '1px solid rgba(224,112,64,0.6)' : '1px solid rgba(224,112,64,0.2)',
+          borderRadius: '0 0 4px 4px',
+          background: 'rgba(224,112,64,0.06)',
+          cursor: onLoreCollect && !loreText ? 'pointer' : 'default',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title="Check the trash bin"
+      >
+        <span style={{ color: 'rgba(224,112,64,0.4)', fontSize: 12, lineHeight: 1 }}>
+          {loreText ? '✓' : '🗑'}
+        </span>
+      </div>
+
       <AnimatePresence>
         {showPuzzle && (
           <DebugChallenge
@@ -197,6 +255,59 @@ export function Web_Studio({ onPuzzleComplete, puzzleCompleted }: Web_StudioProp
             {skills?.skills.find((s) => s.name === showDetail)?.name}
             {' — '}
             Proficiency: {skills?.skills.find((s) => s.name === showDetail)?.proficiency}/5
+          </motion.div>
+        )}
+
+        {loreText && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            style={{
+              position: 'absolute',
+              left: 60,
+              bottom: 40,
+              zIndex: 10,
+              color: '#E0E040',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              background: 'rgba(0,0,0,0.9)',
+              border: '1px solid rgba(240,224,64,0.3)',
+              borderRadius: 4,
+              padding: '8px 12px',
+              maxWidth: 400,
+            }}
+          >
+            {loreText}
+          </motion.div>
+        )}
+
+        {easterEgg && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 20,
+              color: '#f5f5f5',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 18,
+              background: 'rgba(0,0,0,0.95)',
+              border: '2px solid rgba(255,255,255,0.15)',
+              borderRadius: 4,
+              padding: '24px 40px',
+              textAlign: 'center',
+              letterSpacing: '0.05em',
+            }}
+          >
+            {easterEgg}
+            <div style={{ marginTop: 16, fontSize: 11, color: '#666' }}>
+              [click to dismiss]
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

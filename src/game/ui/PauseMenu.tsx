@@ -8,15 +8,27 @@ interface PauseMenuProps {
   onLoad: () => void;
   onSkipGame: () => void;
   onReset: () => void;
+  commentaryUnlocked?: boolean;
+  commentaryEnabled?: boolean;
+  onToggleCommentary?: () => void;
 }
 
-const MENU_ITEMS = [
-  { label: '▶ RESUME', action: 'resume' as const },
-  { label: '💾 SAVE', action: 'save' as const },
-  { label: '📂 LOAD', action: 'load' as const },
-  { label: '⏭ SKIP GAME', action: 'skip' as const },
-  { label: '⟳ RESET', action: 'reset' as const },
-];
+function buildMenuItems(commentaryUnlocked: boolean, commentaryEnabled: boolean) {
+  const items: { label: string; action: string }[] = [
+    { label: '▶ RESUME', action: 'resume' },
+    { label: '💾 SAVE', action: 'save' },
+    { label: '📂 LOAD', action: 'load' },
+    { label: '⏭ SKIP GAME', action: 'skip' },
+    { label: '⟳ RESET', action: 'reset' },
+  ];
+  if (commentaryUnlocked) {
+    items.splice(1, 0, {
+      label: commentaryEnabled ? '💬 COMMENTARY: ON' : '💬 COMMENTARY: OFF',
+      action: 'commentary',
+    });
+  }
+  return items;
+}
 
 export function PauseMenu({
   visible,
@@ -25,12 +37,16 @@ export function PauseMenu({
   onLoad,
   onSkipGame,
   onReset,
+  commentaryUnlocked = false,
+  commentaryEnabled = false,
+  onToggleCommentary,
 }: PauseMenuProps) {
   const [index, setIndex] = useState(0);
+  const menuItems = buildMenuItems(commentaryUnlocked, commentaryEnabled);
 
   const execute = useCallback(
     (i: number) => {
-      const item = MENU_ITEMS[i];
+      const item = menuItems[i];
       switch (item.action) {
         case 'resume':
           onResume();
@@ -47,9 +63,12 @@ export function PauseMenu({
         case 'reset':
           onReset();
           break;
+        case 'commentary':
+          onToggleCommentary?.();
+          break;
       }
     },
-    [onResume, onSave, onLoad, onSkipGame, onReset],
+    [onResume, onSave, onLoad, onSkipGame, onReset, onToggleCommentary, menuItems],
   );
 
   useEffect(() => {
@@ -61,12 +80,12 @@ export function PauseMenu({
         case 'ArrowUp':
         case 'KeyW':
           e.preventDefault();
-          setIndex((i) => (i - 1 + MENU_ITEMS.length) % MENU_ITEMS.length);
+          setIndex((i) => (i - 1 + menuItems.length) % menuItems.length);
           break;
         case 'ArrowDown':
         case 'KeyS':
           e.preventDefault();
-          setIndex((i) => (i + 1) % MENU_ITEMS.length);
+          setIndex((i) => (i + 1) % menuItems.length);
           break;
         case 'Enter':
         case 'Space':
@@ -82,7 +101,7 @@ export function PauseMenu({
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [visible, index, execute, onResume]);
+  }, [visible, index, execute, onResume, menuItems.length]);
 
   return (
     <AnimatePresence>
@@ -128,7 +147,7 @@ export function PauseMenu({
               PAUSED
             </h2>
 
-            {MENU_ITEMS.map((item, i) => {
+            {menuItems.map((item, i) => {
               const selected = i === index;
               return (
                 <button

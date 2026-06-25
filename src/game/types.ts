@@ -142,6 +142,7 @@ export interface GameState {
   achievements: string[];
   playTime: number;
   totalInteractions: number;
+  developerCommentary: boolean;
 }
 
 export type GameAction =
@@ -156,6 +157,7 @@ export type GameAction =
   | { type: 'INCREMENT_ATTEMPT'; puzzleId: string }
   | { type: 'UNLOCK_ACHIEVEMENT'; id: string }
   | { type: 'TICK_TIME' }
+  | { type: 'TOGGLE_COMMENTARY' }
   | { type: 'LOAD_STATE'; state: GameState }
   | { type: 'RESET' };
 
@@ -170,6 +172,7 @@ export interface SaveData {
   achievements: string[];
   playTime: number;
   totalInteractions: number;
+  developerCommentary: boolean;
 }
 
 // --- Zone unlock conditions (matching BLUEPRINT §4.2) ---

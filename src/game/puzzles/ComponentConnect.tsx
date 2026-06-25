@@ -57,7 +57,7 @@ export function ComponentConnect({ onComplete, onClose }: ComponentConnectProps)
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= 2) {
-          setShowHint(true);
+          setTimeout(() => setShowHint(true), 1000);
         }
       }
     },

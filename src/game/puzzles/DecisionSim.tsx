@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 interface DecisionSimProps {
@@ -81,8 +81,10 @@ export function DecisionSim({ onComplete, onClose }: DecisionSimProps) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [phase, selected, handleChoice, handleContinue, onClose]);
 
+  const showSkipRef = useRef(false);
   useEffect(() => {
-    if (attempts >= 2) {
+    if (attempts >= 2 && !showSkipRef.current) {
+      showSkipRef.current = true;
       setShowSkip(true);
     }
   }, [attempts]);

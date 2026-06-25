@@ -153,7 +153,7 @@ export function Zone2AcademyRoom({ onTransition }: Zone2AcademyRoomProps) {
 
   function handlePuzzleComplete() {
     dispatch({ type: 'COMPLETE_PUZZLE', id: 'timeline-sort' });
-    dispatch({ type: 'UNLOCK_ACHIEVEMENT', id: 'iot-tinkerer' });
+    dispatch({ type: 'INCREMENT_ATTEMPT', puzzleId: 'collect-cert' });
     setShowPuzzle(false);
   }
 
