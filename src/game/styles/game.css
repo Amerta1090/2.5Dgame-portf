@@ -34,3 +34,13 @@ body {
   overflow: hidden;
   position: relative;
 }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes promptPulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(240, 224, 64, 0.3); }
+  50% { box-shadow: 0 0 12px rgba(240, 224, 64, 0.6); }
+}

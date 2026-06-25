@@ -9,7 +9,11 @@ const ZONE_LABELS: Record<string, string> = {
   zone6: 'Final Room',
 };
 
-export function HUD() {
+interface HUDProps {
+  onMenuClick?: () => void;
+}
+
+export function HUD({ onMenuClick }: HUDProps) {
   const { state } = useGameState();
 
   return (
@@ -24,13 +28,18 @@ export function HUD() {
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         padding: '12px 16px',
-        pointerEvents: 'none',
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: 12,
         color: '#888',
       }}
     >
-      <div>
+      <div
+        onClick={onMenuClick}
+        style={{ cursor: onMenuClick ? 'pointer' : 'default' }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && onMenuClick) onMenuClick(); }}
+      >
         <span style={{ color: '#F0E040' }}>☰</span>
         {'  '}Menu
       </div>
